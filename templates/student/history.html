@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Counselling History</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fbe9e7;
+            margin: 0;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: #c62828;
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .navbar a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .navbar .logout {
+            background: white;
+            color: #c62828;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        /* ===== CONTENT ===== */
+        .container {
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #c62828;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: #ef5350;
+            color: white;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+        .completed {
+            color: green;
+        }
+        .pending {
+            color: #c62828;
+        }
+
+        .chat-btn {
+            background: #c62828;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            display: inline-block;
+        }
+        .chat-btn:hover {
+            background: #b71c1c;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<div class="navbar">
+    <span class="brand">Student Panel</span>
+    <div>
+        <a href="/student/dashboard">Dashboard</a>
+        <a href="/student/request">Request</a>
+        <a href="/student/history">History</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</div>
+
+<!-- ===== CONTENT ===== -->
+<div class="container">
+    <div class="card">
+        <h2>My Counselling History</h2>
+
+        {% if history %}
+        <table>
+            <tr>
+                <th>Problem</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Teacher Response</th>
+                <th>Conversation</th>
+            </tr>
+
+            {% for h in history %}
+            <tr>
+                <td>{{ h.problem }}</td>
+                <td>{{ h.category }}</td>
+                <td class="status {{ 'completed' if h.status == 'Completed' else 'pending' }}">
+                    {{ h.status }}
+                </td>
+                <td>
+                    {{ h.teacher_response if h.teacher_response else "Waiting for teacher reply" }}
+                </td>
+                <td>
+                    <a class="chat-btn" href="/student/reply/{{ h.request_id }}">
+                        Open Chat
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+            <p>No counselling history found.</p>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>

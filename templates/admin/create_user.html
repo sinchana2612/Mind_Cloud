@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create User</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fbe9e7;
+            margin: 0;
+        }
+
+        .navbar {
+            background: #c62828;
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .navbar a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .navbar .logout {
+            background: white;
+            color: #c62828;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        .container {
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            width: 420px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #c62828;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 15px;
+        }
+        button {
+            background: #c62828;
+            color: white;
+            padding: 10px;
+            border: none;
+            width: 100%;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #b71c1c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <span class="brand">Admin Panel</span>
+    <div>
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/create-user">Create User</a>
+        <a href="/admin/users">View Users</a>
+        <a href="/admin/assign">Assign Students</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2>Create New User</h2>
+
+        <!-- ✅ FIXED ACTION -->
+        <form method="POST" action="/admin/create-user">
+
+            <!-- FULL NAME -->
+            <label>Full Name</label>
+            <!-- ✅ FIXED NAME -->
+            <input type="text" name="UserName" placeholder="Enter full name" required>
+
+            <!-- USER ID / USN -->
+            <label>User ID (USN)</label>
+            <input type="text" name="USN" placeholder="Enter unique User ID" required>
+
+            <!-- PASSWORD -->
+            <label>Password</label>
+            <input type="password" name="password" required>
+
+            <!-- ROLE -->
+            <label>Role</label>
+            <select name="role" required>
+                <option value="">-- Select Role --</option>
+                <option value="admin">Admin</option>
+                <option value="teacher">Teacher</option>
+                <option value="student">Student</option>
+            </select>
+
+            <button type="submit">Create User</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

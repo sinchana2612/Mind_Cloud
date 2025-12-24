@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Counselling Sessions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fbe9e7;
+            margin: 0;
+        }
+
+        .navbar {
+            background: #c62828;
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .navbar a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar .logout {
+            background: white;
+            color: #c62828;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        .container {
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #c62828;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background: #ef5350;
+            color: white;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+        .completed {
+            color: green;
+        }
+        .pending {
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <span class="brand">Admin Panel</span>
+    <div>
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/create-user">Create User</a>
+        <a href="/admin/users">View Users</a>
+        <a href="/admin/assign">Assign Students</a>
+        <a href="/admin/sessions">Sessions</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2>Counselling Sessions</h2>
+
+        {% if sessions %}
+        <table>
+            <tr>
+                <th>Student</th>
+                <th>Problem</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Date</th>
+            </tr>
+
+            {% for s in sessions %}
+            <tr>
+                <td>{{ s.UserName }}</td>
+                <td>{{ s.problem }}</td>
+                <td>{{ s.category }}</td>
+                <td class="status {{ 'completed' if s.status == 'Completed' else 'pending' }}">
+                    {{ s.status }}
+                </td>
+                <td>{{ s.created_at or '—' }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+            <p>No counselling sessions found.</p>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>

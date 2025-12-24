@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fbe9e7;
+            margin: 0;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: #c62828;
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .navbar a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .navbar .logout {
+            background: white;
+            color: #c62828;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        /* ===== CONTENT ===== */
+        .container {
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #c62828;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .info-box {
+            margin-top: 15px;
+            background: #fff3f2;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .info-box p {
+            margin: 6px 0;
+            font-weight: bold;
+        }
+        .info-box span {
+            font-weight: normal;
+            color: #333;
+        }
+
+        .quick-links {
+            margin-top: 20px;
+        }
+        .quick-links a {
+            display: inline-block;
+            margin-right: 15px;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: #c62828;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .quick-links a:hover {
+            background: #b71c1c;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<div class="navbar">
+    <span class="brand">Teacher Panel</span>
+    <div>
+        <a href="/teacher/dashboard">Dashboard</a>
+        <a href="/teacher/request">Requests</a>
+        <a href="/teacher/history">History</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</div>
+
+<!-- ===== CONTENT ===== -->
+<div class="container">
+    <div class="card">
+        <h2>Welcome {{ name }} 👩‍🏫</h2>
+
+        <!-- 🔹 Teacher Details -->
+        {% if teacher %}
+        <div class="info-box">
+            <p>Department: <span>{{ teacher.department }}</span></p>
+            <p>Designation: <span>{{ teacher.designation }}</span></p>
+            <p>Email: <span>{{ teacher.email }}</span></p>
+            <p>Institute: <span>{{ teacher.institute }}</span></p>
+        </div>
+        {% else %}
+        <p style="color:red;">
+            ⚠️ Teacher profile not completed. Please contact admin.
+        </p>
+        {% endif %}
+
+        <p>
+            From here, you can view student counselling requests,
+            respond to students, and track counselling history.
+        </p>
+
+        <div class="quick-links">
+            <a href="/teacher/request">View Requests</a>
+            <a href="/teacher/history">View History</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

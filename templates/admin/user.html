@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Users</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fbe9e7;
+            margin: 0;
+        }
+        .navbar {
+            background: #c62828;
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .navbar a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar .logout {
+            background: white;
+            color: #c62828;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+        .container {
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #c62828;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background: #ef5350;
+            color: white;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .admin { background: #6a1b9a; }
+        .teacher { background: #2e7d32; }
+        .student { background: #0277bd; }
+        .action-btn {
+            text-decoration: none;
+            font-weight: bold;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <span class="brand">Admin Panel</span>
+    <div>
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/create-user">Create User</a>
+        <a href="/admin/users">View Users</a>
+        <a href="/admin/assign">Assign Students</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2>System Users</h2>
+
+        {% if users %}
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>USN</th>
+                <th>Role</th>
+                <th>Action</th>
+            </tr>
+
+            {% for u in users %}
+            <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.UserName }}</td>
+                <td>{{ u.USN }}</td>
+                <td>
+                    <span class="badge {{ u.role }}">
+                        {{ u.role|capitalize }}
+                    </span>
+                </td>
+                <td>
+                    {% if u.role == 'student' %}
+                        <a class="action-btn" href="/admin/add-student">Add Details</a>
+                    {% elif u.role == 'teacher' %}
+                        <a class="action-btn" href="/admin/add-teacher">Add Details</a>
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+            <p>No users found.</p>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>

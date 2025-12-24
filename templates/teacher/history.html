@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher History</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fbe9e7;
+            margin: 0;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: #c62828;
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .navbar a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar .logout {
+            background: white;
+            color: #c62828;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        /* ===== CONTENT ===== */
+        .container {
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #c62828;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: #ef5350;
+            color: white;
+        }
+
+        .reply-btn {
+            background: #c62828;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .reply-btn:hover {
+            background: #b71c1c;
+        }
+
+        .date {
+            font-size: 13px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<div class="navbar">
+    <span class="brand">Teacher Panel</span>
+    <div>
+        <a href="/teacher/dashboard">Dashboard</a>
+        <a href="/teacher/request">Requests</a>
+        <a href="/teacher/history">History</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</div>
+
+<!-- ===== CONTENT ===== -->
+<div class="container">
+    <div class="card">
+        <h2>Counselling History</h2>
+
+        {% if history %}
+        <table>
+            <tr>
+                <th>Student Name</th>
+                <th>Problem</th>
+                <th>Your Response</th>
+                <th>Date</th>
+                <th>Conversation</th>
+            </tr>
+
+            {% for h in history %}
+            <tr>
+                <!-- ✅ THIS WAS MISSING -->
+                <td>{{ h.student_name }}</td>
+
+                <td>{{ h.problem }}</td>
+                <td>{{ h.teacher_response }}</td>
+                <td class="date">{{ h.completed_at }}</td>
+                <td>
+                    <a class="reply-btn" href="/teacher/reply/{{ h.request_id }}">
+                        Open Chat
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+            <p>No counselling history available.</p>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>

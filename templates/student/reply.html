@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Conversation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fbe9e7;
+            margin: 0;
+        }
+        .header {
+            background: #c62828;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        .container {
+            padding: 20px;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            max-width: 70%;
+        }
+        .student {
+            background: #ffcdd2;
+            margin-left: auto;
+        }
+        .teacher {
+            background: #ffebee;
+            margin-right: auto;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 15px;
+            padding: 10px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: #c62828;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            color: #c62828;
+            font-weight: bold;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h2>Counselling Conversation</h2>
+</div>
+
+<div class="container">
+
+    {% for m in messages %}
+        <div class="message {{ m.sender_role }}">
+            {{ m.message }}
+        </div>
+    {% endfor %}
+
+    <form method="POST">
+        <textarea name="message" placeholder="Type your reply..." required></textarea>
+        <button type="submit">Send Reply</button>
+    </form>
+
+    <a href="/student/history">⬅ Back to History</a>
+
+</div>
+
+</body>
+</html>

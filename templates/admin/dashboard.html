@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+
+    <!-- GOOGLE CHARTS -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fbe9e7;
+            margin: 0;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: #c62828;
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .navbar .right a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar .right a:hover {
+            text-decoration: underline;
+        }
+     .navbar .logout {
+            
+            color: rgb(228, 223, 223);
+            padding: 6px 12px;
+            border-radius: 4px;
+     }
+
+        /* ===== CONTENT ===== */
+        .container {
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        h3 {
+            color: #c62828;
+            margin-bottom: 15px;
+        }
+        .charts {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+    </style>
+
+    <script>
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(loadCharts);
+
+        function loadCharts() {
+            fetch('/admin/analytics')
+                .then(response => response.json())
+                .then(data => {
+                    drawStatusChart(data.status);
+                    drawCategoryChart(data.category);
+                });
+        }
+
+        function drawStatusChart(statusData) {
+            let data = new google.visualization.DataTable();
+            data.addColumn('string', 'Status');
+            data.addColumn('number', 'Count');
+
+            statusData.forEach(row => {
+                data.addRow([row[0], row[1]]);
+            });
+
+            let options = {
+                title: 'Counselling Status',
+                colors: ['#c62828', '#2e7d32'],
+                backgroundColor: 'transparent'
+            };
+
+            let chart = new google.visualization.PieChart(
+                document.getElementById('statusChart')
+            );
+            chart.draw(data, options);
+        }
+
+        function drawCategoryChart(categoryData) {
+            let data = new google.visualization.DataTable();
+            data.addColumn('string', 'Category');
+            data.addColumn('number', 'Count');
+
+            categoryData.forEach(row => {
+                data.addRow([row[0], row[1]]);
+            });
+
+            let options = {
+                title: 'Category-wise Counselling Requests',
+                colors: ['#c62828'],
+                backgroundColor: 'transparent'
+            };
+
+            let chart = new google.visualization.ColumnChart(
+                document.getElementById('categoryChart')
+            );
+            chart.draw(data, options);
+        }
+    </script>
+</head>
+
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<div class="navbar">
+    <div class="brand">
+        Admin Panel — Welcome {{ username }}
+    </div>
+    <div class="right">
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/create-user">Create User</a>
+        <a href="/admin/users">View Users</a>
+        <a href="/admin/assign">Assign Students</a>
+        <a href="/admin/sessions">Sessions</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</div>
+
+<!-- ===== CONTENT ===== -->
+<div class="container">
+
+    <div class="card">
+        <h3>Admin Controls</h3>
+        <p>
+            Use the navigation bar above to manage users, assign students to teachers,
+            monitor counselling sessions, and view system analytics.
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>System Analytics</h3>
+        <div class="charts">
+            <div id="statusChart" style="width: 450px; height: 300px;"></div>
+            <div id="categoryChart" style="width: 450px; height: 300px;"></div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

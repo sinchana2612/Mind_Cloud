@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Conversation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fbe9e7;
+            margin: 0;
+        }
+
+        .header {
+            background: #c62828;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .container {
+            padding: 25px;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .chat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .message {
+            padding: 12px 15px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            max-width: 70%;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .student {
+            background: #ffcdd2;
+            margin-right: auto;
+            border-top-left-radius: 0;
+        }
+
+        .teacher {
+            background: #ffebee;
+            margin-left: auto;
+            border-top-right-radius: 0;
+        }
+
+        textarea {
+            width: 100%;
+            height: 110px;
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #c62828;
+        }
+
+        button {
+            margin-top: 12px;
+            padding: 10px 18px;
+            background: #c62828;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #b71c1c;
+        }
+
+        .ai-btn {
+            background: #ef5350;
+        }
+
+        .ai-btn:hover {
+            background: #e53935;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            color: #c62828;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        h3 {
+            margin-top: 20px;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    Counselling Conversation
+</div>
+
+<div class="container">
+    <div class="chat-box">
+
+        <!-- CHAT MESSAGES -->
+        {% for m in messages %}
+            <div class="message {{ m.sender_role }}">
+                {{ m.message }}
+            </div>
+        {% endfor %}
+
+        <!-- AI + TEACHER RESPONSE FORM -->
+        <form method="POST">
+
+            <!-- 🔥 FIX: formnovalidate added -->
+            <button type="submit" name="generate_ai" class="ai-btn" formnovalidate>
+                Generate AI Suggestion
+            </button>
+
+            {% if ai_text %}
+                <h3>AI Suggested Reply (Editable)</h3>
+                <textarea name="ai_response">{{ ai_text }}</textarea>
+            {% endif %}
+
+            <h3>Teacher Reply</h3>
+            <textarea name="message"
+                      placeholder="Type your final reply here..."
+                      required></textarea>
+
+            <button type="submit" name="send_reply">
+                Send Reply
+            </button>
+
+        </form>
+
+    </div>
+
+    <a href="/teacher/history">⬅ Back to History</a>
+</div>
+
+</body>
+</html>

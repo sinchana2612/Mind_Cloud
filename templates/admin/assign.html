@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assign Students</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fbe9e7;
+            margin: 0;
+        }
+
+        .navbar {
+            background: #c62828;
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .navbar a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar .logout {
+            background: white;
+            color: #c62828;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        .container {
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 420px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #c62828;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+        }
+        button {
+            background: #c62828;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #b71c1c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <span class="brand">Admin Panel</span>
+    <div>
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/create-user">Create User</a>
+        <a href="/admin/users">View Users</a>
+        <a href="/admin/assign">Assign Students</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2>Assign Student to Teacher</h2>
+
+        <form method="POST" action="/admin/assign">
+
+            <label>Select Student</label>
+            <select name="student_id" required>
+                <option value="">-- Choose Student --</option>
+                {% for s in students %}
+                    <option value="{{ s.id }}">{{ s.UserName }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Select Teacher</label>
+            <select name="teacher_id" required>
+                <option value="">-- Choose Teacher --</option>
+                {% for t in teachers %}
+                    <option value="{{ t.id }}">{{ t.UserName }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Assign</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

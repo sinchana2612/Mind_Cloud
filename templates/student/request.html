@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Request Counselling</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fbe9e7;
+            margin: 0;
+        }
+        .navbar {
+            background: #c62828;
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .navbar a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .container {
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            width: 450px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+        textarea, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+        }
+        button {
+            background: #c62828;
+            color: white;
+            border: none;
+            margin-top: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <span>Student Panel</span>
+    <div>
+        <a href="/student/dashboard">Dashboard</a>
+        <a href="/student/history">My Requests</a>
+        <a href="/logout">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2>Request Counselling Session</h2>
+
+        <form method="POST">
+
+            <!-- PROBLEM -->
+            <label>Your Problem</label>
+            <textarea name="problem" rows="4" required></textarea>
+
+            <!-- CATEGORY -->
+            <label>Category</label>
+            <select name="category" required>
+                <option value="">-- Select Category --</option>
+                <option value="Academic">Academic</option>
+                <option value="Mental">Mental</option>
+                <option value="Personal">Personal</option>
+                <option value="Health">Health</option>
+            </select>
+
+            <button type="submit">Submit Request</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

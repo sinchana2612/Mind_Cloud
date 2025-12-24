@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | MindEase Counselling System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #c62828, #ffffff);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-box {
+            background: #ffffff;
+            width: 380px;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            border-top: 6px solid #c62828;
+        }
+        h2 {
+            text-align: center;
+            color: #c62828;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            color: #444;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 16px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #c62828;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #b71c1c;
+        }
+        .error-box {
+            background: #fdecea;
+            color: #b71c1c;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-box">
+
+    <h2>Welcome to MindEase</h2>
+    <div class="subtitle">Teacher–Student Counselling System</div>
+
+    {% if error %}
+        <div class="error-box">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/login">
+
+        <!-- ✅ THIS MUST EXIST -->
+        <label>User ID (USN)</label>
+        <input type="text" name="USN" placeholder="Enter your USN" required>
+
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Enter your Password" required>
+
+        <label>Login As</label>
+        <select name="role" required>
+            <option value="">-- Select Role --</option>
+            <option value="admin">Admin</option>
+            <option value="teacher">Teacher</option>
+            <option value="student">Student</option>
+        </select>
+
+        <button type="submit">Login</button>
+    </form>
+</div>
+
+</body>
+</html>

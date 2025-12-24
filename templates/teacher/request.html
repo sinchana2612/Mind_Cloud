@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Requests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fbe9e7;
+            margin: 0;
+        }
+        .header {
+            background: #c62828;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        .container {
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        textarea {
+            height: 120px;
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px 18px;
+            background: #c62828;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #b71c1c;
+        }
+        h3 {
+            margin-top: 20px;
+            color: #c62828;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            color: #c62828;
+            font-weight: bold;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h2>Pending Counselling Requests</h2>
+</div>
+
+<div class="container">
+    <div class="card">
+
+        <!-- ===== AI GENERATION FORM ===== -->
+        <form method="POST">
+            <label><b>Select Request</b></label>
+            <select name="request_id" required>
+                {% for r in requests %}
+                    <option value="{{ r.id }}"
+                        {% if selected_request_id == r.id|string %}selected{% endif %}>
+                        {{ r.student_name }} — {{ r.category }} — {{ r.problem[:50] }}...
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" name="generate_ai">
+                Generate AI Suggestion
+            </button>
+        </form>
+
+        {% if ai_text %}
+        <hr>
+
+        <!-- ===== FINAL TEACHER REPLY (GOES TO /teacher/reply/<id>) ===== -->
+        <form method="POST" action="/teacher/reply/{{ selected_request_id }}">
+
+            <h3>AI Suggested Response (Editable)</h3>
+            <textarea>{{ ai_text }}</textarea>
+
+            <h3>Teacher Final Response</h3>
+            <!-- 🔥 BACKEND EXPECTS name="message" -->
+            <textarea name="message" required></textarea>
+
+            <!-- 🔥 BACKEND EXPECTS name="send_reply" -->
+            <button type="submit" name="send_reply">
+                Submit Final Response
+            </button>
+        </form>
+        {% endif %}
+
+    </div>
+
+    <a href="/teacher/dashboard">⬅ Back to Dashboard</a>
+</div>
+
+</body>
+</html>

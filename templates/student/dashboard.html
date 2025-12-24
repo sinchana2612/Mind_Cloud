@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fbe9e7;
+            margin: 0;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: #c62828;
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .navbar a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .navbar .logout {
+            background: white;
+            color: #c62828;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        /* ===== CONTENT ===== */
+        .container {
+            padding: 30px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #c62828;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #444;
+        }
+
+        .actions {
+            margin-top: 20px;
+        }
+        .actions a {
+            display: inline-block;
+            margin-right: 15px;
+            padding: 10px 16px;
+            background: #c62828;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .actions a:hover {
+            background: #b71c1c;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<div class="navbar">
+    <span class="brand">Student Panel</span>
+    <div>
+        <a href="/student/dashboard">Dashboard</a>
+        <a href="/student/request">Request</a>
+        <a href="/student/history">History</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</div>
+
+<!-- ===== CONTENT ===== -->
+<div class="container">
+    <div class="card">
+        <h2>Welcome {{ student.UserName }} 🎓</h2>
+
+                    <p><b>Department:</b> {{ student.department }}</p>
+                    <p><b>Class:</b> {{ student.class }}</p>
+                    <p><b>Email:</b> {{ student.email }}</p>
+
+        <p>
+            You can request counselling sessions, view teacher responses,
+            and continue conversations using the options below.
+        </p>
+
+        <div class="actions">
+            <a href="/student/request">Request Counselling</a>
+            <a href="/student/history">View History</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
