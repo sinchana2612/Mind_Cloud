@@ -92,3 +92,7 @@ The platform focuses on **privacy, continuity of care, and data‑driven decisio
    ```bash
    git clone <your-repo-link>
    cd mindease
+   pip install -r requirements.txt
+   python app.py
+   NOTE : “Update database credentials in app.py before running.”
+
