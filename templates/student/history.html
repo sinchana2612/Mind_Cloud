@@ -2,14 +2,22 @@
 <html>
 <head>
     <title>My Counselling History</title>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-482XK0D475"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-482XK0D475');
+    </script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #fbe9e7;
             margin: 0;
         }
-
-        /* ===== NAVBAR ===== */
         .navbar {
             background: #c62828;
             color: white;
@@ -28,17 +36,12 @@
             text-decoration: none;
             font-weight: bold;
         }
-        .navbar a:hover {
-            text-decoration: underline;
-        }
         .navbar .logout {
             background: white;
             color: #c62828;
             padding: 6px 12px;
             border-radius: 4px;
         }
-
-        /* ===== CONTENT ===== */
         .container {
             padding: 30px;
         }
@@ -48,12 +51,10 @@
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-
         h2 {
             color: #c62828;
             margin-bottom: 20px;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
@@ -61,24 +62,13 @@
         th, td {
             padding: 12px;
             border-bottom: 1px solid #ddd;
-            text-align: left;
-            vertical-align: top;
         }
         th {
             background: #ef5350;
             color: white;
         }
-
-        .status {
-            font-weight: bold;
-        }
-        .completed {
-            color: green;
-        }
-        .pending {
-            color: #c62828;
-        }
-
+        .completed { color: green; font-weight: bold; }
+        .pending { color: #c62828; font-weight: bold; }
         .chat-btn {
             background: #c62828;
             color: white;
@@ -87,16 +77,15 @@
             text-decoration: none;
             font-weight: bold;
             font-size: 14px;
-            display: inline-block;
         }
         .chat-btn:hover {
             background: #b71c1c;
         }
     </style>
 </head>
+
 <body>
 
-<!-- ===== NAVBAR ===== -->
 <div class="navbar">
     <span class="brand">Student Panel</span>
     <div>
@@ -107,7 +96,6 @@
     </div>
 </div>
 
-<!-- ===== CONTENT ===== -->
 <div class="container">
     <div class="card">
         <h2>My Counselling History</h2>
@@ -126,14 +114,22 @@
             <tr>
                 <td>{{ h.problem }}</td>
                 <td>{{ h.category }}</td>
-                <td class="status {{ 'completed' if h.status == 'Completed' else 'pending' }}">
+
+                <td class="{{ 'completed' if h.status == 'Completed' else 'pending' }}">
                     {{ h.status }}
                 </td>
+
                 <td>
-                    {{ h.teacher_response if h.teacher_response else "Waiting for teacher reply" }}
+                    {% if h.status == 'Completed' %}
+                        Response sent by teacher
+                    {% else %}
+                        Waiting for teacher reply
+                    {% endif %}
                 </td>
+
                 <td>
-                    <a class="chat-btn" href="/student/reply/{{ h.request_id }}">
+                    <!-- ✅ FIXED LINE -->
+                    <a class="chat-btn" href="/student/reply/{{ h.id }}">
                         Open Chat
                     </a>
                 </td>

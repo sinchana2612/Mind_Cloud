@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 from datetime import datetime
 import subprocess
+from functools import wraps   # ✅ REQUIRED
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key_123"
@@ -17,17 +18,16 @@ def get_db():
         autocommit=True
     )
 
-
 # ================= LOGIN REQUIRED =================
 def login_required(role=None):
     def decorator(func):
+        @wraps(func)   # ✅ FIX
         def wrapper(*args, **kwargs):
             if "user_id" not in session:
                 return redirect("/")
             if role and session.get("role") != role:
                 return "Unauthorized Access", 403
             return func(*args, **kwargs)
-        wrapper.__name__ = func.__name__
         return wrapper
     return decorator
 
@@ -112,7 +112,6 @@ def student_request():
             request.form["category"]
         ))
 
-        db.commit()
         return redirect("/student/history")
 
     return render_template("student/request.html")
@@ -123,29 +122,22 @@ def student_history():
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
+    # ✅ FIX: map users.id → students.id
+    cursor.execute(
+        "SELECT id FROM students WHERE user_id=%s",
+        (session["user_id"],)
+    )
+    student = cursor.fetchone()
+
     cursor.execute("""
-        SELECT
-            cr.id AS request_id,
-            cr.problem,
-            cr.category,
-            cr.status,
-            cres.teacher_response
-        FROM counselling_requests cr
-        LEFT JOIN counselling_responses cres
-            ON cr.id = cres.request_id
-        WHERE cr.student_id = (
-            SELECT id FROM students WHERE user_id=%s
-        )
-        ORDER BY cr.id DESC
-    """, (session["user_id"],))
+        SELECT id,problem, category, status, created_at
+        FROM counselling_requests
+        WHERE student_id=%s
+        ORDER BY created_at DESC
+    """, (student["id"],))
 
     history = cursor.fetchall()
-
-    return render_template(
-        "student/history.html",
-        history=history,
-        name=session["name"]
-    )
+    return render_template("student/history.html", history=history)
 
 @app.route("/student/reply/<int:request_id>", methods=["GET", "POST"])
 @login_required("student")
@@ -159,7 +151,6 @@ def student_reply(request_id):
             VALUES (%s, 'student', %s)
         """, (request_id, request.form["message"]))
 
-        db.commit()
         return redirect(f"/student/reply/{request_id}")
 
     cursor.execute("""
@@ -199,7 +190,6 @@ def student_profile():
             request.form["email"]
         ))
 
-        db.commit()
         return redirect("/student/dashboard")
 
     return render_template("student/profile.html")
@@ -211,7 +201,32 @@ def student_profile():
 @app.route("/teacher/dashboard")
 @login_required("teacher")
 def teacher_dashboard():
-    return render_template("teacher/dashboard.html", name=session["name"])
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT COUNT(DISTINCT cr.id) AS new_count
+        FROM counselling_requests cr
+        JOIN students s ON cr.student_id = s.id
+        JOIN teachers t ON s.assigned_teacher_id = t.id
+        JOIN counselling_messages cm ON cm.request_id = cr.id
+        LEFT JOIN counselling_responses cres ON cres.request_id = cr.id
+        WHERE t.user_id = %s
+        AND cm.sender_role = 'student'
+        AND (
+            cres.completed_at IS NULL
+            OR cm.created_at > cres.completed_at
+        )
+    """, (session["user_id"],))
+
+    new_messages = cursor.fetchone()["new_count"]
+
+    return render_template(
+        "teacher/dashboard.html",
+        name=session["name"],
+        new_messages=new_messages
+    )
+
 
 @app.route("/teacher/request", methods=["GET", "POST"])
 @login_required("teacher")
@@ -243,7 +258,20 @@ def teacher_request():
         JOIN students s ON cr.student_id = s.id
         JOIN users u ON s.user_id = u.id
         JOIN teachers t ON s.assigned_teacher_id = t.id
-        WHERE t.user_id=%s AND cr.status='Pending'
+        WHERE t.user_id=%s AND (
+    cr.status = 'Pending'
+    OR cr.id IN (
+        SELECT cm.request_id
+        FROM counselling_messages cm
+        WHERE cm.sender_role = 'student'
+        AND cm.created_at > (
+            SELECT IFNULL(MAX(cres.completed_at), '1970-01-01')
+            FROM counselling_responses cres
+            WHERE cres.request_id = cm.request_id
+        )
+    )
+)
+
     """, (session["user_id"],))
 
     return render_template(
@@ -328,7 +356,6 @@ def teacher_reply(request_id):
                 WHERE id=%s
             """, (request_id,))
 
-            db.commit()
             return redirect(f"/teacher/reply/{request_id}")
 
     cursor.execute("""
@@ -347,6 +374,7 @@ def teacher_reply(request_id):
         request_id=request_id,
         name=session["name"]
     )
+
 # ======================================================
 # ===================== ADMIN ==========================
 # ======================================================
@@ -355,6 +383,7 @@ def teacher_reply(request_id):
 @login_required("admin")
 def admin_dashboard():
     return render_template("admin/dashboard.html", name=session["name"])
+
 @app.route("/admin/create-user", methods=["GET", "POST"])
 @login_required("admin")
 def admin_create_user():
@@ -374,10 +403,10 @@ def admin_create_user():
             request.form["role"]
         ))
 
-        db.commit()
         return redirect("/admin/dashboard")
 
     return render_template("admin/create_user.html")
+
 @app.route("/admin/users")
 @login_required("admin")
 def admin_users():
@@ -388,6 +417,7 @@ def admin_users():
     users = cursor.fetchall()
 
     return render_template("admin/user.html", users=users)
+
 @app.route("/admin/assign", methods=["GET", "POST"])
 @login_required("admin")
 def admin_assign():
@@ -404,7 +434,6 @@ def admin_assign():
             WHERE id = %s
         """, (teacher_id, student_id))
 
-        db.commit()
         return redirect("/admin/assign")
 
     cursor.execute("""
@@ -426,6 +455,7 @@ def admin_assign():
         students=students,
         teachers=teachers
     )
+
 @app.route("/admin/sessions")
 @login_required("admin")
 def admin_sessions():
@@ -447,29 +477,19 @@ def admin_sessions():
 
     sessions = cursor.fetchall()
     return render_template("admin/sessions.html", sessions=sessions)
+
 @app.route("/admin/analytics")
 @login_required("admin")
 def admin_analytics():
     db = get_db()
     cursor = db.cursor()
 
-    # 1️⃣ Status analytics
-    cursor.execute("""
-        SELECT status, COUNT(*)
-        FROM counselling_requests
-        GROUP BY status
-    """)
+    cursor.execute("SELECT status, COUNT(*) FROM counselling_requests GROUP BY status")
     status_data = cursor.fetchall()
 
-    # 2️⃣ Category analytics
-    cursor.execute("""
-        SELECT category, COUNT(*)
-        FROM counselling_requests
-        GROUP BY category
-    """)
+    cursor.execute("SELECT category, COUNT(*) FROM counselling_requests GROUP BY category")
     category_data = cursor.fetchall()
 
-    # 3️⃣ Teacher-wise sessions analytics
     cursor.execute("""
         SELECT u.UserName, COUNT(cres.id)
         FROM counselling_responses cres
@@ -481,17 +501,11 @@ def admin_analytics():
     """)
     teacher_data = cursor.fetchall()
 
-    cursor.close()
-    db.close()
-
     return {
         "status": status_data,
         "category": category_data,
         "teachers": teacher_data
     }
-
-
-
 
 # ======================================================
 # ===================== GEMMA AI =======================

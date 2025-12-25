@@ -2,6 +2,15 @@
 <html>
 <head>
     <title>Teacher Dashboard</title>
+    <!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-482XK0D475"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-482XK0D475');
+</script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -117,10 +126,6 @@
             <p>Email: <span>{{ teacher.email }}</span></p>
             <p>Institute: <span>{{ teacher.institute }}</span></p>
         </div>
-        {% else %}
-        <p style="color:red;">
-            ⚠️ Teacher profile not completed. Please contact admin.
-        </p>
         {% endif %}
 
         <p>
