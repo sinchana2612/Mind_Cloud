@@ -94,5 +94,6 @@ The platform focuses on **privacy, continuity of care, and data‑driven decisio
    cd mindease
    pip install -r requirements.txt
    python app.py
-   NOTE : “Update database credentials in app.py before running.”
+
+NOTE : “Update database credentials in app.py before running.”
 
