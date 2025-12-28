@@ -13,7 +13,7 @@ def get_db():
     return mysql.connector.connect(
         host="localhost",
         user="root",
-        password="your-password",
+        password="Vars_13613",
         database="counselling_system",
         autocommit=True
     )
