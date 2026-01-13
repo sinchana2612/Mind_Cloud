@@ -1,13 +1,11 @@
-from flask import Flask, render_template, request, redirect, session
 from flask import Flask, render_template, request, redirect, session, send_file
-
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 from datetime import datetime
 import subprocess
 from functools import wraps
 import openpyxl
-from io import BytesIO   # ✅ REQUIRED
+from io import BytesIO
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key_123"
@@ -25,7 +23,7 @@ def get_db():
 # ================= LOGIN REQUIRED =================
 def login_required(role=None):
     def decorator(func):
-        @wraps(func)   # ✅ FIX
+        @wraps(func)
         def wrapper(*args, **kwargs):
             if "user_id" not in session:
                 return redirect("/")
@@ -49,10 +47,8 @@ def login():
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    cursor.execute(
-        "SELECT * FROM users WHERE USN=%s AND role=%s",
-        (usn, role)
-    )
+    cursor.execute("SELECT * FROM users WHERE USN=%s AND role=%s",
+                   (usn, role))
     user = cursor.fetchone()
 
     if not user or not check_password_hash(user["password"], password):
@@ -88,11 +84,9 @@ def student_dashboard():
 
     student = cursor.fetchone()
 
-    return render_template(
-        "student/dashboard.html",
-        student=student,
-        name=session["name"]
-    )
+    return render_template("student/dashboard.html",
+                           student=student,
+                           name=session["name"])
 
 @app.route("/student/request", methods=["GET", "POST"])
 @login_required("student")
@@ -101,20 +95,14 @@ def student_request():
     cursor = db.cursor(dictionary=True)
 
     if request.method == "POST":
-        cursor.execute(
-            "SELECT id FROM students WHERE user_id=%s",
-            (session["user_id"],)
-        )
+        cursor.execute("SELECT id FROM students WHERE user_id=%s",
+                       (session["user_id"],))
         student = cursor.fetchone()
 
         cursor.execute("""
             INSERT INTO counselling_requests (student_id, problem, category, status)
             VALUES (%s, %s, %s, 'Pending')
-        """, (
-            student["id"],
-            request.form["problem"],
-            request.form["category"]
-        ))
+        """, (student["id"], request.form["problem"], request.form["category"]))
 
         return redirect("/student/history")
 
@@ -126,18 +114,20 @@ def student_history():
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    # ✅ FIX: map users.id → students.id
-    cursor.execute(
-        "SELECT id FROM students WHERE user_id=%s",
-        (session["user_id"],)
-    )
+    cursor.execute("SELECT id FROM students WHERE user_id=%s",
+                   (session["user_id"],))
     student = cursor.fetchone()
 
     cursor.execute("""
-        SELECT id,problem, category, status, created_at
-        FROM counselling_requests
-        WHERE student_id=%s
-        ORDER BY created_at DESC
+        SELECT cr.id, cr.problem, cr.category, cr.status, cr.created_at,
+               COALESCE((
+                   SELECT MAX(cm.confidential)
+                   FROM counselling_messages cm
+                   WHERE cm.request_id = cr.id AND cm.sender_role='student'
+               ),0) AS confidential
+        FROM counselling_requests cr
+        WHERE cr.student_id=%s
+        ORDER BY cr.created_at DESC
     """, (student["id"],))
 
     history = cursor.fetchall()
@@ -149,20 +139,15 @@ def mark_confidential(request_id):
     db = get_db()
     cursor = db.cursor()
 
-    # Checkbox value — if checked send 1 else 0
     confidential = 1 if request.form.get("confidential") == "1" else 0
 
-    # Update messages sent by THIS student for this request
     cursor.execute("""
         UPDATE counselling_messages
         SET confidential=%s
-        WHERE request_id=%s
-        AND sender_role='student'
+        WHERE request_id=%s AND sender_role='student'
     """, (confidential, request_id))
 
     return redirect("/student/history")
-
-
 
 @app.route("/student/reply/<int:request_id>", methods=["GET", "POST"])
 @login_required("student")
@@ -175,49 +160,45 @@ def student_reply(request_id):
             INSERT INTO counselling_messages (request_id, sender_role, message)
             VALUES (%s, 'student', %s)
         """, (request_id, request.form["message"]))
-
         return redirect(f"/student/reply/{request_id}")
 
+    # Load messages
     cursor.execute("""
         SELECT sender_role, message, created_at
         FROM counselling_messages
-        WHERE request_id=%s
-        ORDER BY created_at
+        WHERE request_id=%s ORDER BY created_at
     """, (request_id,))
-
     messages = cursor.fetchall()
 
-    return render_template(
-        "student/reply.html",
-        messages=messages,
-        request_id=request_id,
-        name=session["name"]
-    )
+    # Check if teacher has replied
+    cursor.execute("SELECT teacher_response, student_rating FROM counselling_responses WHERE request_id=%s",
+                   (request_id,))
+    cres = cursor.fetchone()
+    teacher_replied = bool(cres and cres["teacher_response"])
+    rating = cres["student_rating"] if cres else None
 
-@app.route("/student/profile", methods=["GET", "POST"])
+    return render_template("student/reply.html",
+                           messages=messages,
+                           request_id=request_id,
+                           teacher_replied=teacher_replied,
+                           current_rating=rating,
+                           name=session["name"])
+
+@app.route("/student/rate/<int:request_id>", methods=["POST"])
 @login_required("student")
-def student_profile():
+def student_rate(request_id):
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
-    if request.method == "POST":
-        cursor.execute("""
-            INSERT INTO students (user_id, department, class, email)
-            VALUES (%s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE
-                department=VALUES(department),
-                class=VALUES(class),
-                email=VALUES(email)
-        """, (
-            session["user_id"],
-            request.form["department"],
-            request.form["class"],
-            request.form["email"]
-        ))
+    rating = int(request.form["rating"])
 
-        return redirect("/student/dashboard")
+    cursor.execute("""
+        UPDATE counselling_responses
+        SET student_rating=%s
+        WHERE request_id=%s
+    """, (rating, request_id))
 
-    return render_template("student/profile.html")
+    return redirect(f"/student/reply/{request_id}")
 
 # ======================================================
 # ===================== TEACHER ========================
@@ -236,22 +217,15 @@ def teacher_dashboard():
         JOIN teachers t ON s.assigned_teacher_id = t.id
         JOIN counselling_messages cm ON cm.request_id = cr.id
         LEFT JOIN counselling_responses cres ON cres.request_id = cr.id
-        WHERE t.user_id = %s
-        AND cm.sender_role = 'student'
-        AND (
-            cres.completed_at IS NULL
-            OR cm.created_at > cres.completed_at
-        )
+        WHERE t.user_id=%s AND cm.sender_role='student'
+        AND (cres.completed_at IS NULL OR cm.created_at > cres.completed_at)
     """, (session["user_id"],))
 
     new_messages = cursor.fetchone()["new_count"]
 
-    return render_template(
-        "teacher/dashboard.html",
-        name=session["name"],
-        new_messages=new_messages
-    )
-
+    return render_template("teacher/dashboard.html",
+                           name=session["name"],
+                           new_messages=new_messages)
 
 @app.route("/teacher/request", methods=["GET", "POST"])
 @login_required("teacher")
@@ -262,68 +236,48 @@ def teacher_request():
     ai_text = None
     selected_request_id = None
 
-    # ---------- Normal (Non-Confidential) requests ----------
     cursor.execute("""
         SELECT cr.id, cr.problem, cr.category, u.UserName AS student_name
         FROM counselling_requests cr
         JOIN students s ON cr.student_id = s.id
         JOIN users u ON s.user_id = u.id
         JOIN teachers t ON s.assigned_teacher_id = t.id
-        WHERE t.user_id=%s 
-        AND (
-            SELECT cm.confidential
-            FROM counselling_messages cm
-            WHERE cm.request_id = cr.id
-            ORDER BY cm.created_at DESC
-            LIMIT 1
+        WHERE t.user_id=%s AND (
+            SELECT MAX(cm.confidential)
+            FROM counselling_messages cm WHERE cm.request_id = cr.id
         ) = 0
     """, (session["user_id"],))
     normal_requests = cursor.fetchall()
 
-    # ---------- Confidential requests ----------
     cursor.execute("""
         SELECT cr.id
         FROM counselling_requests cr
         JOIN students s ON cr.student_id = s.id
         JOIN teachers t ON s.assigned_teacher_id = t.id
-        WHERE t.user_id=%s
-        AND (
-            SELECT cm.confidential
-            FROM counselling_messages cm
-            WHERE cm.request_id = cr.id
-            ORDER BY cm.created_at DESC
-            LIMIT 1
+        WHERE t.user_id=%s AND (
+            SELECT MAX(cm.confidential)
+            FROM counselling_messages cm WHERE cm.request_id = cr.id
         ) = 1
     """, (session["user_id"],))
     private_requests = cursor.fetchall()
 
-    # ---------- AI suggestion ----------
     if request.method == "POST" and "generate_ai" in request.form:
         selected_request_id = request.form["request_id"]
-
         cursor.execute("""
             SELECT sender_role, message
             FROM counselling_messages
-            WHERE request_id=%s
-            ORDER BY created_at
+            WHERE request_id=%s ORDER BY created_at
         """, (selected_request_id,))
+        conv = "\n".join(f"{m['sender_role']}: {m['message']}" for m in cursor.fetchall())
+        ai_text = gemma_response(conv)
 
-        conversation = "\n".join(
-            [f"{m['sender_role']}: {m['message']}" for m in cursor.fetchall()]
-        )
-        ai_text = gemma_response(conversation)
-
-    return render_template(
-        "teacher/request.html",
-        requests=normal_requests,
-        private_requests=private_requests,
-        ai_text=ai_text,
-        selected_request_id=selected_request_id,
-        name=session["name"]
-    )
-
-
-
+    return render_template("teacher/request.html",
+                           requests=normal_requests,
+                           private_requests=private_requests,
+                           ai_text=ai_text,
+                           selected_request_id=selected_request_id,
+                           name=session["name"])
+                           
 @app.route("/teacher/history")
 @login_required("teacher")
 def teacher_history():
@@ -331,19 +285,27 @@ def teacher_history():
     cursor = db.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT
+        SELECT 
             cr.id AS request_id,
-            cr.problem,
             u.UserName AS student_name,
+            cr.problem,
             cres.teacher_response,
-            cres.completed_at
-        FROM counselling_responses cres
-        JOIN counselling_requests cr ON cres.request_id = cr.id
+            cres.student_feedback,
+            cres.student_rating,
+            cres.completed_at,
+            COALESCE((
+                SELECT MAX(cm.confidential)
+                FROM counselling_messages cm
+                WHERE cm.request_id = cr.id
+                AND cm.sender_role='student'
+            ),0) AS confidential
+        FROM counselling_requests cr
         JOIN students s ON cr.student_id = s.id
         JOIN users u ON s.user_id = u.id
         JOIN teachers t ON s.assigned_teacher_id = t.id
+        LEFT JOIN counselling_responses cres ON cres.request_id = cr.id
         WHERE t.user_id=%s
-        ORDER BY cres.completed_at DESC
+        ORDER BY completed_at DESC
     """, (session["user_id"],))
 
     history = cursor.fetchall()
@@ -353,99 +315,6 @@ def teacher_history():
         history=history,
         name=session["name"]
     )
-@app.route("/teacher/export_excel")
-@login_required("teacher")
-def export_excel():
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-
-    cursor.execute("SELECT id FROM teachers WHERE user_id=%s", (session["user_id"],))
-    teacher = cursor.fetchone()
-
-    # Pull messages grouped by request
-    cursor.execute("""
-        SELECT u.UserName AS student_name,
-               cr.problem,
-               cr.category,
-               cm.message,
-               cm.created_at,
-               cm.confidential,
-               cres.teacher_response
-        FROM counselling_messages cm
-        JOIN counselling_requests cr ON cm.request_id = cr.id
-        JOIN students s ON cr.student_id = s.id
-        JOIN users u ON s.user_id = u.id
-        LEFT JOIN counselling_responses cres ON cres.request_id = cr.id
-        WHERE s.assigned_teacher_id=%s
-        ORDER BY cm.request_id, cm.created_at
-    """, (teacher["id"],))
-
-    rows = cursor.fetchall()
-
-    # Collect conversation per request to summarize
-    grouped = {}
-    for r in rows:
-        rid = f"{r['student_name']}_{r['problem']}"
-        grouped.setdefault(rid, []).append(r)
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Counselling Report"
-
-    ws.append([
-        "Student Name",
-        "Problem",
-        "Category",
-        "Message Text",
-        "Counselling Date",
-        "Teacher Resolution",
-        "AI Summary",
-        "Confidential"
-    ])
-
-    for rid, msgs in grouped.items():
-        first = msgs[0]
-        last = msgs[-1]
-
-        # Summarize with Gemma
-        conversation = "\n".join([m["message"] for m in msgs])
-        summary_prompt = f"""
-Provide a 3–5 sentence counselling summary based on this full conversation.
-NO bullets. NO lists. Just a simple professional explanation.
-
-Conversation:
-{conversation}
-
-Summary:
-"""
-        summary = gemma_response(summary_prompt)
-
-        # Anonymous if confidential
-        name = "Anonymous Student" if first["confidential"] == 1 else first["student_name"]
-
-        for m in msgs:
-            ws.append([
-                name,
-                first["problem"],
-                first["category"],
-                m["message"],
-                last["created_at"].strftime("%Y-%m-%d %H:%M"),
-                first["teacher_response"] or "",
-                summary,
-                "YES" if m["confidential"] == 1 else "NO"
-            ])
-
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-
-    return send_file(
-        output,
-        as_attachment=True,
-        download_name="counselling_report.xlsx",
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
 
 @app.route("/teacher/reply/<int:request_id>", methods=["GET", "POST"])
 @login_required("teacher")
@@ -455,7 +324,6 @@ def teacher_reply(request_id):
     ai_text = None
 
     if request.method == "POST":
-
         if "generate_ai" in request.form:
             cursor.execute("""
                 SELECT sender_role, message
@@ -463,9 +331,9 @@ def teacher_reply(request_id):
                 WHERE request_id=%s
                 ORDER BY created_at
             """, (request_id,))
-
             conversation = "\n".join(
-                [f"{m['sender_role']}: {m['message']}" for m in cursor.fetchall()]
+                f"{m['sender_role']}: {m['message']}"
+                for m in cursor.fetchall()
             )
             ai_text = gemma_response(conversation)
 
@@ -499,7 +367,6 @@ def teacher_reply(request_id):
         WHERE request_id=%s
         ORDER BY created_at
     """, (request_id,))
-
     messages = cursor.fetchall()
 
     return render_template(
@@ -508,6 +375,102 @@ def teacher_reply(request_id):
         ai_text=ai_text,
         request_id=request_id,
         name=session["name"]
+    )
+
+@app.route("/teacher/export_excel")
+@login_required("teacher")
+def export_excel():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("SELECT id FROM teachers WHERE user_id=%s",
+                   (session["user_id"],))
+    teacher = cursor.fetchone()
+
+    cursor.execute("""
+    SELECT 
+        u.UserName AS student_name,
+        cr.problem,
+        cr.category,
+        cm.message,
+        cm.created_at,
+        cm.confidential,
+        cres.teacher_response,
+        cres.student_feedback,
+        cres.student_rating,
+        cm.request_id
+    FROM counselling_messages cm
+    JOIN counselling_requests cr ON cm.request_id = cr.id
+    JOIN students s ON cr.student_id = s.id
+    JOIN users u ON s.user_id = u.id
+    LEFT JOIN counselling_responses cres ON cres.request_id = cr.id
+    WHERE s.assigned_teacher_id=%s
+    ORDER BY cm.request_id, cm.created_at
+    """, (teacher["id"],))
+
+    rows = cursor.fetchall()
+
+    grouped = {}
+    for r in rows:
+        rid = r["request_id"]
+        grouped.setdefault(rid, {
+            "student_name": r["student_name"],
+            "problem": r["problem"],
+            "category": r["category"],
+            "messages": [],
+            "teacher_response": r["teacher_response"],
+            "student_feedback": r["student_feedback"],
+            "student_rating": r["student_rating"],
+            "created_at": r["created_at"],
+            "confidential": 0
+        })
+        grouped[rid]["messages"].append(r)
+        if r["confidential"] == 1:
+            grouped[rid]["confidential"] = 1
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Counselling Report"
+    ws.append([
+        "Student Name", "Problem", "Category",
+        "Messages Combined", "Counselling Date",
+        "Teacher Resolution", "Student Feedback",
+        "Student Rating ⭐", "AI Summary", "Confidential"
+    ])
+
+    for rid, data in grouped.items():
+        is_conf = data["confidential"] == 1
+        name = "Anonymous Student" if is_conf else data["student_name"]
+
+        conversation = "\n".join([m["message"] for m in data["messages"]])
+        summary = gemma_response(f"""
+Summarize this counselling exchange in 3-5 human sentences.
+No bullets. No lists.
+
+Conversation:
+{conversation}
+
+Summary:
+""")
+
+        ws.append([
+            name, data["problem"], data["category"],
+            conversation, data["created_at"].strftime("%Y-%m-%d %H:%M"),
+            data["teacher_response"] or "",
+            data["student_feedback"] or "",
+            data["student_rating"] if data["student_rating"] else "",
+            summary,
+            "YES" if is_conf else "NO"
+        ])
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    return send_file(
+        output, as_attachment=True,
+        download_name="counselling_report.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
 # ======================================================
@@ -527,17 +490,12 @@ def admin_create_user():
 
     if request.method == "POST":
         hashed = generate_password_hash(request.form["password"])
-
         cursor.execute("""
             INSERT INTO users (UserName, USN, password, role)
             VALUES (%s, %s, %s, %s)
-        """, (
-            request.form["UserName"],
-            request.form["USN"],
-            hashed,
-            request.form["role"]
-        ))
-
+        """, (request.form["UserName"],
+              request.form["USN"], hashed,
+              request.form["role"]))
         return redirect("/admin/dashboard")
 
     return render_template("admin/create_user.html")
@@ -562,34 +520,28 @@ def admin_assign():
     if request.method == "POST":
         student_id = request.form["student_id"]
         teacher_id = request.form["teacher_id"]
-
         cursor.execute("""
             UPDATE students
-            SET assigned_teacher_id = %s
-            WHERE id = %s
+            SET assigned_teacher_id=%s
+            WHERE id=%s
         """, (teacher_id, student_id))
-
         return redirect("/admin/assign")
 
     cursor.execute("""
         SELECT s.id, u.UserName
-        FROM students s
-        JOIN users u ON s.user_id = u.id
+        FROM students s JOIN users u ON s.user_id = u.id
     """)
     students = cursor.fetchall()
 
     cursor.execute("""
         SELECT t.id, u.UserName
-        FROM teachers t
-        JOIN users u ON t.user_id = u.id
+        FROM teachers t JOIN users u ON t.user_id = u.id
     """)
     teachers = cursor.fetchall()
 
-    return render_template(
-        "admin/assign.html",
-        students=students,
-        teachers=teachers
-    )
+    return render_template("admin/assign.html",
+                           students=students,
+                           teachers=teachers)
 
 @app.route("/admin/sessions")
 @login_required("admin")
@@ -598,12 +550,8 @@ def admin_sessions():
     cursor = db.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT
-            u.UserName,
-            cr.problem,
-            cr.category,
-            cr.status,
-            cr.created_at
+        SELECT u.UserName, cr.problem, cr.category,
+               cr.status, cr.created_at
         FROM counselling_requests cr
         JOIN students s ON cr.student_id = s.id
         JOIN users u ON s.user_id = u.id
@@ -645,36 +593,26 @@ def admin_analytics():
 # ======================================================
 # ===================== GEMMA AI =======================
 # ======================================================
-
 def gemma_response(conversation):
     prompt = f"""
 You are a calm college counsellor.
 Read the conversation fully and reply like a human teacher.
-No bullet points. No markdown. Step by step guidance.
-
+No bullet points. No markdown. Provide support.
 Conversation:
 {conversation}
-
 Reply:
 """
     try:
-        result = subprocess.run(
+        res = subprocess.run(
             ["ollama", "run", "gemma:2b"],
-            input=prompt,
-            text=True,
-            capture_output=True,
-            encoding="utf-8",
+            input=prompt, text=True,
+            capture_output=True, encoding="utf-8",
             timeout=60
         )
-        return result.stdout.strip() or "I'm here. Let's talk this through."
+        return res.stdout.strip() or "I'm here for you."
     except:
-        return "AI is temporarily unavailable."
+        return "AI unavailable."
 
 # ================= RUN =================
 if __name__ == "__main__":
-    app.run(
-        host="127.0.0.1",
-        port=5000,
-        debug=True,
-        use_reloader=False
-    )
+    app.run(host="127.0.0.1", port=5000, debug=True, use_reloader=False)

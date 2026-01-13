@@ -91,31 +91,7 @@
                 Generate AI Suggestion
             </button>
         </form>
-        {% if private_requests %}
-<hr>
-<h3>🔒 Confidential Requests</h3>
-
-<table style="width:100%; margin-top:10px;">
-    <tr>
-        <th style="text-align:left;">Confidential</th>
-        <th style="text-align:left;">View</th>
-    </tr>
-
-    {% for p in private_requests %}
-    <tr>
-        <td><span style="color:#c62828;font-weight:bold;">🔒 Hidden by Student</span></td>
-        <td>
-            <a href="/teacher/reply/{{ p.id }}" 
-               style="background:#c62828;color:white;padding:6px 12px;
-                      border-radius:4px;text-decoration:none;font-weight:bold;">
-                👁 View Request
-            </a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-{% endif %}
-
+        
 
         {% if ai_text %}
         <hr>

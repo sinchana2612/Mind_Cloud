@@ -125,15 +125,37 @@
             {% for h in history %}
             <tr>
                 <!-- ✅ THIS WAS MISSING -->
-                <td>{{ h.student_name }}</td>
+                <td>
+                     {% if h.confidential == 1 %}
+                        🔒 Confidential
+                        {% else %}
+                        {{ h.student_name }}
+                     {% endif %}
+                </td>
 
-                <td>{{ h.problem }}</td>
-                <td>{{ h.teacher_response }}</td>
+
+                <td>
+                {% if h.confidential == 1 %}
+                🔒 Hidden
+                {% else %}
+                {{ h.problem }}
+                 {% endif %}
+                </td>
+
+                <td>
+                 {% if h.confidential == 1 %}
+                 🔒 Hidden
+                {% else %}
+                {{ h.teacher_response }}
+                {% endif %}
+                </td>
+
                 <td class="date">{{ h.completed_at }}</td>
                 <td>
-                    <a class="reply-btn" href="/teacher/reply/{{ h.request_id }}">
-                        Open Chat
+                    <a class="reply-btn" href="{{ url_for('teacher_reply', request_id=h.request_id) }}">
+                     Open Chat
                     </a>
+
                 </td>
             </tr>
             {% endfor %}
