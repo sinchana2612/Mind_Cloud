@@ -1,9 +1,13 @@
 from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, send_file
+
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
 from datetime import datetime
 import subprocess
-from functools import wraps   # ✅ REQUIRED
+from functools import wraps
+import openpyxl
+from io import BytesIO   # ✅ REQUIRED
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key_123"
@@ -139,6 +143,27 @@ def student_history():
     history = cursor.fetchall()
     return render_template("student/history.html", history=history)
 
+@app.route("/student/mark_confidential/<int:request_id>", methods=["POST"])
+@login_required("student")
+def mark_confidential(request_id):
+    db = get_db()
+    cursor = db.cursor()
+
+    # Checkbox value — if checked send 1 else 0
+    confidential = 1 if request.form.get("confidential") == "1" else 0
+
+    # Update messages sent by THIS student for this request
+    cursor.execute("""
+        UPDATE counselling_messages
+        SET confidential=%s
+        WHERE request_id=%s
+        AND sender_role='student'
+    """, (confidential, request_id))
+
+    return redirect("/student/history")
+
+
+
 @app.route("/student/reply/<int:request_id>", methods=["GET", "POST"])
 @login_required("student")
 def student_reply(request_id):
@@ -237,6 +262,42 @@ def teacher_request():
     ai_text = None
     selected_request_id = None
 
+    # ---------- Normal (Non-Confidential) requests ----------
+    cursor.execute("""
+        SELECT cr.id, cr.problem, cr.category, u.UserName AS student_name
+        FROM counselling_requests cr
+        JOIN students s ON cr.student_id = s.id
+        JOIN users u ON s.user_id = u.id
+        JOIN teachers t ON s.assigned_teacher_id = t.id
+        WHERE t.user_id=%s 
+        AND (
+            SELECT cm.confidential
+            FROM counselling_messages cm
+            WHERE cm.request_id = cr.id
+            ORDER BY cm.created_at DESC
+            LIMIT 1
+        ) = 0
+    """, (session["user_id"],))
+    normal_requests = cursor.fetchall()
+
+    # ---------- Confidential requests ----------
+    cursor.execute("""
+        SELECT cr.id
+        FROM counselling_requests cr
+        JOIN students s ON cr.student_id = s.id
+        JOIN teachers t ON s.assigned_teacher_id = t.id
+        WHERE t.user_id=%s
+        AND (
+            SELECT cm.confidential
+            FROM counselling_messages cm
+            WHERE cm.request_id = cr.id
+            ORDER BY cm.created_at DESC
+            LIMIT 1
+        ) = 1
+    """, (session["user_id"],))
+    private_requests = cursor.fetchall()
+
+    # ---------- AI suggestion ----------
     if request.method == "POST" and "generate_ai" in request.form:
         selected_request_id = request.form["request_id"]
 
@@ -252,35 +313,16 @@ def teacher_request():
         )
         ai_text = gemma_response(conversation)
 
-    cursor.execute("""
-        SELECT cr.id, cr.problem, cr.category, u.UserName AS student_name
-        FROM counselling_requests cr
-        JOIN students s ON cr.student_id = s.id
-        JOIN users u ON s.user_id = u.id
-        JOIN teachers t ON s.assigned_teacher_id = t.id
-        WHERE t.user_id=%s AND (
-    cr.status = 'Pending'
-    OR cr.id IN (
-        SELECT cm.request_id
-        FROM counselling_messages cm
-        WHERE cm.sender_role = 'student'
-        AND cm.created_at > (
-            SELECT IFNULL(MAX(cres.completed_at), '1970-01-01')
-            FROM counselling_responses cres
-            WHERE cres.request_id = cm.request_id
-        )
-    )
-)
-
-    """, (session["user_id"],))
-
     return render_template(
         "teacher/request.html",
-        requests=cursor.fetchall(),
+        requests=normal_requests,
+        private_requests=private_requests,
         ai_text=ai_text,
         selected_request_id=selected_request_id,
         name=session["name"]
     )
+
+
 
 @app.route("/teacher/history")
 @login_required("teacher")
@@ -311,6 +353,99 @@ def teacher_history():
         history=history,
         name=session["name"]
     )
+@app.route("/teacher/export_excel")
+@login_required("teacher")
+def export_excel():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("SELECT id FROM teachers WHERE user_id=%s", (session["user_id"],))
+    teacher = cursor.fetchone()
+
+    # Pull messages grouped by request
+    cursor.execute("""
+        SELECT u.UserName AS student_name,
+               cr.problem,
+               cr.category,
+               cm.message,
+               cm.created_at,
+               cm.confidential,
+               cres.teacher_response
+        FROM counselling_messages cm
+        JOIN counselling_requests cr ON cm.request_id = cr.id
+        JOIN students s ON cr.student_id = s.id
+        JOIN users u ON s.user_id = u.id
+        LEFT JOIN counselling_responses cres ON cres.request_id = cr.id
+        WHERE s.assigned_teacher_id=%s
+        ORDER BY cm.request_id, cm.created_at
+    """, (teacher["id"],))
+
+    rows = cursor.fetchall()
+
+    # Collect conversation per request to summarize
+    grouped = {}
+    for r in rows:
+        rid = f"{r['student_name']}_{r['problem']}"
+        grouped.setdefault(rid, []).append(r)
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Counselling Report"
+
+    ws.append([
+        "Student Name",
+        "Problem",
+        "Category",
+        "Message Text",
+        "Counselling Date",
+        "Teacher Resolution",
+        "AI Summary",
+        "Confidential"
+    ])
+
+    for rid, msgs in grouped.items():
+        first = msgs[0]
+        last = msgs[-1]
+
+        # Summarize with Gemma
+        conversation = "\n".join([m["message"] for m in msgs])
+        summary_prompt = f"""
+Provide a 3–5 sentence counselling summary based on this full conversation.
+NO bullets. NO lists. Just a simple professional explanation.
+
+Conversation:
+{conversation}
+
+Summary:
+"""
+        summary = gemma_response(summary_prompt)
+
+        # Anonymous if confidential
+        name = "Anonymous Student" if first["confidential"] == 1 else first["student_name"]
+
+        for m in msgs:
+            ws.append([
+                name,
+                first["problem"],
+                first["category"],
+                m["message"],
+                last["created_at"].strftime("%Y-%m-%d %H:%M"),
+                first["teacher_response"] or "",
+                summary,
+                "YES" if m["confidential"] == 1 else "NO"
+            ])
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="counselling_report.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 
 @app.route("/teacher/reply/<int:request_id>", methods=["GET", "POST"])
 @login_required("teacher")
