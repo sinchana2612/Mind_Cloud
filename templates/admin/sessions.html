@@ -116,7 +116,7 @@
                 <td>{{ s.UserName }}</td>
                 <td>{{ s.problem }}</td>
                 <td>{{ s.category }}</td>
-                <td class="status {{ 'completed' if s.status == 'Completed' else 'pending' }}">
+                <td class="status {{ 'completed' if s.status == 'ENDED' else 'pending' }}">
                     {{ s.status }}
                 </td>
                 <td>{{ s.created_at or '—' }}</td>

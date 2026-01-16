@@ -3,7 +3,6 @@
 <head>
     <title>My Counselling History</title>
 
-    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-482XK0D475"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -13,73 +12,50 @@
     </script>
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #fbe9e7;
-            margin: 0;
-        }
+        body { font-family: Arial, sans-serif; background: #fbe9e7; margin: 0; }
+
         .navbar {
-            background: #c62828;
-            color: white;
+            background: #c62828; color: white;
             padding: 12px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .navbar .brand {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .navbar a {
-            color: white;
-            margin-left: 20px;
-            text-decoration: none;
-            font-weight: bold;
-        }
+        .navbar a { color: white; margin-left: 20px; text-decoration: none; font-weight: bold; }
         .navbar .logout {
-            background: white;
-            color: #c62828;
-            padding: 6px 12px;
-            border-radius: 4px;
+            background: white; color: #c62828;
+            padding: 6px 12px; border-radius: 4px;
         }
-        .container {
-            padding: 30px;
-        }
+
+        .container { padding: 30px; }
         .card {
-            background: white;
-            padding: 25px;
+            background: white; padding: 25px;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        h2 {
-            color: #c62828;
-            margin-bottom: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+
+        h2 { color: #c62828; margin-bottom: 20px; }
+
+        table { width: 100%; border-collapse: collapse; }
         th, td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
+            padding: 12px; border-bottom: 1px solid #ddd;
         }
-        th {
-            background: #ef5350;
-            color: white;
-        }
+        th { background: #ef5350; color: white; }
+
         .completed { color: green; font-weight: bold; }
         .pending { color: #c62828; font-weight: bold; }
+        .closed { color: #777; font-weight: bold; }
+
         .chat-btn {
-            background: #c62828;
-            color: white;
+            background: #c62828; color: white;
             padding: 6px 14px;
             border-radius: 4px;
             text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
+            font-weight: bold; font-size: 14px;
         }
-        .chat-btn:hover {
-            background: #b71c1c;
+        .chat-btn:hover { background: #b71c1c; }
+
+        .disabled-btn {
+            background: #777 !important;
+            cursor: allowed;
         }
     </style>
 </head>
@@ -101,59 +77,50 @@
         <h2>My Counselling History</h2>
 
         {% if history %}
-      {% if history %}
-<table>
-    <tr>
-        <th>Problem</th>
-        <th>Category</th>
-        <th>Status</th>
-        <th>Confidential</th>
-        <th>Conversation</th>
-    </tr>
+        <table>
+            <tr>
+                <th>Problem</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Type</th>
+                <th>Conversation</th>
+            </tr>
 
-    {% for h in history %}
-    <tr>
-        <td>{{ h.problem }}</td>
-        <td>{{ h.category }}</td>
+            {% for h in history %}
+            <tr>
+                <td>{{ h.problem }}</td>
+                <td>{{ h.category }}</td>
 
-        <td class="{{ 'completed' if h.status == 'Completed' else 'pending' }}">
-            {{ h.status }}
-        </td>
+                <!-- Status Display -->
+                <td class="{% if h.is_closed == 1 %}closed{% elif h.status == 'Completed' %}completed{% else %}pending{% endif %}">
+                    {% if h.is_closed == 1 %}
+                        ENDED
+                    {% else %}
+                        {{ h.status }}
+                    {% endif %}
+                </td>
 
-        <td>
-            <!-- 🔐 CONFIDENTIAL CHECKBOX SAVE -->
-            <form action="/student/mark_confidential/{{ h.id }}" method="POST" style="display:flex;align-items:center;">
-                <label style="font-size:13px;">
-                   <input type="checkbox" name="confidential" value="1"
-                        {% if h.confidential == 1 %} checked{% endif %}>
+                <!-- Confidential Checkbox -->
+                <td>
+                   {% if h.confidential == 1 %}
+                     🔒 Confidential
+                   {% else %}
+                     Visible
+                   {% endif %}
+                </td>
 
-                    Hide My Identity
-                </label>
-                <button type="submit" style="
-                    margin-left:6px;
-                    background:#c62828;
-                    color:white;
-                    padding:4px 10px;
-                    border-radius:4px;
-                    border:none;
-                    cursor:pointer;
-                    font-size:12px;
-                ">Save</button>
-            </form>
-        </td>
 
-        <td style="white-space:nowrap;">
-            <a class="chat-btn" href="/student/reply/{{ h.id }}">
-                Open Chat
-            </a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-{% else %}
-    <p>No counselling history found.</p>
-{% endif %}
-
+                <!-- Chat Button -->
+                <td style="white-space:nowrap;">
+                    {% if h.is_closed == 1 %}
+                        <a class="chat-btn disabled-btn" href="/student/reply/{{ h.id }}">View Chat</a>
+                    {% else %}
+                        <a class="chat-btn" href="/student/reply/{{ h.id }}">Open Chat</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
         {% else %}
             <p>No counselling history found.</p>
         {% endif %}

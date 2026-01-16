@@ -98,16 +98,24 @@ def student_request():
         cursor.execute("SELECT id FROM students WHERE user_id=%s",
                        (session["user_id"],))
         student = cursor.fetchone()
-
+        confidential = 1 if request.form.get("confidential") == "1" else 0
+        
+        #create counselling request
         cursor.execute("""
-            INSERT INTO counselling_requests (student_id, problem, category, status)
-            VALUES (%s, %s, %s, 'Pending')
+            INSERT INTO counselling_requests (student_id, problem, category, status, is_closed)
+            VALUES (%s, %s, %s, 'Pending', 0)
         """, (student["id"], request.form["problem"], request.form["category"]))
+        request_id = cursor.lastrowid
+
+        #save confidentiality on first message
+        cursor.execute("""
+            INSERT INTO counselling_messages (request_id, sender_role, message, confidential)
+            VALUES (%s, 'student', %s, %s)
+        """, (request_id, request.form["problem"], confidential))
 
         return redirect("/student/history")
 
     return render_template("student/request.html")
-
 
 @app.route("/student/history")
 @login_required("student")
@@ -120,36 +128,26 @@ def student_history():
     student = cursor.fetchone()
 
     cursor.execute("""
-        SELECT cr.id, cr.problem, cr.category, cr.status, cr.created_at,
-               COALESCE((
-                   SELECT MAX(cm.confidential)
-                   FROM counselling_messages cm
-                   WHERE cm.request_id = cr.id AND cm.sender_role='student'
-               ),0) AS confidential
-        FROM counselling_requests cr
-        WHERE cr.student_id=%s
-        ORDER BY cr.created_at DESC
+    SELECT 
+        cr.id, 
+        cr.problem, 
+        cr.category, 
+        cr.status,
+        cr.is_closed,
+        cr.created_at,
+        COALESCE((
+            SELECT MAX(cm.confidential)
+            FROM counselling_messages cm
+            WHERE cm.request_id = cr.id
+            AND cm.sender_role='student'
+        ),0) AS confidential
+    FROM counselling_requests cr
+    WHERE cr.student_id=%s
+    ORDER BY cr.created_at DESC
     """, (student["id"],))
 
     history = cursor.fetchall()
     return render_template("student/history.html", history=history)
-
-@app.route("/student/mark_confidential/<int:request_id>", methods=["POST"])
-@login_required("student")
-def mark_confidential(request_id):
-    db = get_db()
-    cursor = db.cursor()
-
-    confidential = 1 if request.form.get("confidential") == "1" else 0
-
-    cursor.execute("""
-        UPDATE counselling_messages
-        SET confidential=%s
-        WHERE request_id=%s AND sender_role='student'
-    """, (confidential, request_id))
-
-    return redirect("/student/history")
-
 
 @app.route("/student/reply/<int:request_id>", methods=["GET", "POST"])
 @login_required("student")
@@ -157,13 +155,26 @@ def student_reply(request_id):
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    if request.method == "POST":
+    cursor.execute("SELECT is_closed FROM counselling_requests WHERE id=%s",
+                   (request_id,))
+    closed = cursor.fetchone()["is_closed"]
+
+    # ------------------ HANDLE POST MESSAGE ------------------
+    if request.method == "POST" and closed == 0:
         cursor.execute("""
             INSERT INTO counselling_messages (request_id, sender_role, message)
             VALUES (%s, 'student', %s)
         """, (request_id, request.form["message"]))
+
+        cursor.execute("""
+            UPDATE counselling_requests
+            SET status='Pending'
+            WHERE id=%s AND is_closed=0
+        """, (request_id,))
+
         return redirect(f"/student/reply/{request_id}")
 
+    # ------------------ FETCH MESSAGES ------------------
     cursor.execute("""
         SELECT sender_role, message, created_at
         FROM counselling_messages
@@ -171,18 +182,22 @@ def student_reply(request_id):
     """, (request_id,))
     messages = cursor.fetchall()
 
-    cursor.execute("SELECT teacher_response, student_rating FROM counselling_responses WHERE request_id=%s",
-                   (request_id,))
+    cursor.execute("""
+        SELECT teacher_response, student_rating
+        FROM counselling_responses WHERE request_id=%s
+    """, (request_id,))
     cres = cursor.fetchone()
-    teacher_replied = bool(cres and cres["teacher_response"])
     rating = cres["student_rating"] if cres else None
 
-    return render_template("student/reply.html",
-                           messages=messages,
-                           request_id=request_id,
-                           teacher_replied=teacher_replied,
-                           current_rating=rating,
-                           name=session["name"])
+    return render_template(
+        "student/reply.html",
+        messages=messages,
+        request_id=request_id,
+        closed=closed,
+        current_rating=rating,
+        name=session["name"]
+    )
+
 
 @app.route("/student/end_chat/<int:request_id>", methods=["POST"])
 @login_required("student")
@@ -192,18 +207,23 @@ def end_chat(request_id):
 
     cursor.execute("""
         UPDATE counselling_requests
-        SET status='Completed'
+        SET is_closed=1, status='Completed'
         WHERE id=%s
     """, (request_id,))
 
-    return redirect(f"/student/feedback/{request_id}")
+    cursor.execute("""
+        INSERT INTO counselling_responses (request_id)
+        VALUES (%s)
+        ON DUPLICATE KEY UPDATE request_id=request_id
+    """, (request_id,))
 
+    return redirect(f"/student/feedback/{request_id}")
 
 @app.route("/student/feedback/<int:request_id>", methods=["GET", "POST"])
 @login_required("student")
 def student_feedback(request_id):
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     if request.method == "POST":
         feedback = request.form["feedback"]
@@ -236,9 +256,7 @@ def teacher_dashboard():
         JOIN students s ON cr.student_id = s.id
         JOIN teachers t ON s.assigned_teacher_id = t.id
         JOIN counselling_messages cm ON cm.request_id = cr.id
-        LEFT JOIN counselling_responses cres ON cres.request_id = cr.id
-        WHERE t.user_id=%s AND cm.sender_role='student'
-        AND (cres.completed_at IS NULL OR cm.created_at > cres.completed_at)
+        WHERE t.user_id=%s AND cr.is_closed=0 AND cm.sender_role='student'
     """, (session["user_id"],))
 
     new_messages = cursor.fetchone()["new_count"]
@@ -247,15 +265,11 @@ def teacher_dashboard():
                            name=session["name"],
                            new_messages=new_messages)
 
-
 @app.route("/teacher/request", methods=["GET", "POST"])
 @login_required("teacher")
 def teacher_request():
     db = get_db()
     cursor = db.cursor(dictionary=True)
-
-    ai_text = None
-    selected_request_id = None
 
     cursor.execute("""
         SELECT cr.id, cr.problem, cr.category, u.UserName AS student_name
@@ -263,42 +277,31 @@ def teacher_request():
         JOIN students s ON cr.student_id = s.id
         JOIN users u ON s.user_id = u.id
         JOIN teachers t ON s.assigned_teacher_id = t.id
-        WHERE t.user_id=%s AND (
-            SELECT MAX(cm.confidential)
-            FROM counselling_messages cm WHERE cm.request_id = cr.id
-        ) = 0
+        WHERE t.user_id=%s AND cr.is_closed=0
     """, (session["user_id"],))
-    normal_requests = cursor.fetchall()
 
-    cursor.execute("""
-        SELECT cr.id
-        FROM counselling_requests cr
-        JOIN students s ON cr.student_id = s.id
-        JOIN teachers t ON s.assigned_teacher_id = t.id
-        WHERE t.user_id=%s AND (
-            SELECT MAX(cm.confidential)
-            FROM counselling_messages cm WHERE cm.request_id = cr.id
-        ) = 1
-    """, (session["user_id"],))
-    private_requests = cursor.fetchall()
+    requests = cursor.fetchall()
 
-    if request.method == "POST" and "generate_ai" in request.form:
-        selected_request_id = request.form["request_id"]
-        cursor.execute("""
-            SELECT sender_role, message
-            FROM counselling_messages
-            WHERE request_id=%s ORDER BY created_at
-        """, (selected_request_id,))
-        conv = "\n".join(f"{m['sender_role']}: {m['message']}" for m in cursor.fetchall())
-        ai_text = gemma_response(conv)
+    ai_text = None
+    selected_request_id = None
+
+    if request.method == "POST":
+        selected_request_id = request.form.get("request_id")
+
+        if selected_request_id and "generate_ai" in request.form:
+            cursor.execute("""
+                SELECT sender_role, message
+                FROM counselling_messages
+                WHERE request_id=%s ORDER BY created_at
+            """, (selected_request_id,))
+            conv = "\n".join(f"{m['sender_role']}: {m['message']}" for m in cursor.fetchall())
+            ai_text = gemma_response(conv)
 
     return render_template("teacher/request.html",
-                           requests=normal_requests,
-                           private_requests=private_requests,
+                           requests=requests,
                            ai_text=ai_text,
                            selected_request_id=selected_request_id,
                            name=session["name"])
-
 
 @app.route("/teacher/history")
 @login_required("teacher")
@@ -307,36 +310,45 @@ def teacher_history():
     cursor = db.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT 
-            cr.id AS request_id,
-            u.UserName AS student_name,
-            cr.problem,
-            cres.teacher_response,
-            cres.student_feedback,
-            cres.student_rating,
-            cres.completed_at,
-            COALESCE((
-                SELECT MAX(cm.confidential)
-                FROM counselling_messages cm
-                WHERE cm.request_id = cr.id
-                AND cm.sender_role='student'
-            ),0) AS confidential
-        FROM counselling_requests cr
-        JOIN students s ON cr.student_id = s.id
-        JOIN users u ON s.user_id = u.id
-        JOIN teachers t ON s.assigned_teacher_id = t.id
-        LEFT JOIN counselling_responses cres ON cres.request_id = cr.id
-        WHERE t.user_id=%s
-        ORDER BY completed_at DESC
+    SELECT DISTINCT
+        cr.id AS request_id,
+        u.UserName AS student_name,
+        cr.problem,
+        cr.category,
+
+        CASE
+            WHEN cr.is_closed = 1 THEN 'Ended'
+            WHEN cr.status = 'Teacher Responded' THEN 'Completed'
+            ELSE 'Pending'
+        END AS status,
+
+        cr.is_closed,
+        cr.created_at,
+        
+        -- These come from counselling_responses but we only want one row
+        (SELECT student_feedback FROM counselling_responses WHERE request_id = cr.id LIMIT 1) AS student_feedback,
+        (SELECT student_rating FROM counselling_responses WHERE request_id = cr.id LIMIT 1) AS student_rating,
+
+        COALESCE((
+            SELECT MAX(cm.confidential)
+            FROM counselling_messages cm
+            WHERE cm.request_id = cr.id
+              AND cm.sender_role='student'
+        ),0) AS confidential
+
+    FROM counselling_requests cr
+    JOIN students s ON cr.student_id = s.id
+    JOIN users u ON s.user_id = u.id
+    JOIN teachers t ON s.assigned_teacher_id = t.id
+    WHERE t.user_id=%s
+    ORDER BY cr.created_at DESC
     """, (session["user_id"],))
 
     history = cursor.fetchall()
 
-    return render_template(
-        "teacher/history.html",
-        history=history,
-        name=session["name"]
-    )
+    return render_template("teacher/history.html",
+                           history=history,
+                           name=session["name"])
 
 
 @app.route("/teacher/reply/<int:request_id>", methods=["GET", "POST"])
@@ -346,49 +358,57 @@ def teacher_reply(request_id):
     cursor = db.cursor(dictionary=True)
     ai_text = None
 
-    if request.method == "POST":
+    # Check closed
+    cursor.execute("SELECT is_closed FROM counselling_requests WHERE id=%s",
+                   (request_id,))
+    closed = cursor.fetchone()["is_closed"]
+
+    if request.method == "POST" and closed == 0:
+
+        # ===== AI Suggestion =====
         if "generate_ai" in request.form:
             cursor.execute("""
                 SELECT sender_role, message
                 FROM counselling_messages
-                WHERE request_id=%s
-                ORDER BY created_at
+                WHERE request_id=%s ORDER BY created_at
             """, (request_id,))
-            conversation = "\n".join(
-                f"{m['sender_role']}: {m['message']}"
-                for m in cursor.fetchall()
-            )
-            ai_text = gemma_response(conversation)
+            conv = "\n".join(f"{m['sender_role']}: {m['message']}" for m in cursor.fetchall())
+            ai_text = gemma_response(conv)
 
+        # ===== Teacher Sends Reply =====
         elif "send_reply" in request.form:
-            teacher_msg = request.form["message"]
+            teacher_msg = request.form["message"].strip()
 
-            cursor.execute("""
-                INSERT INTO counselling_messages (request_id, sender_role, message)
-                VALUES (%s, 'teacher', %s)
-            """, (request_id, teacher_msg))
+            if teacher_msg:
+                # 1️⃣ Save the teacher message
+                cursor.execute("""
+                    INSERT INTO counselling_messages (request_id, sender_role, message)
+                    VALUES (%s, 'teacher', %s)
+                """, (request_id, teacher_msg))
 
-            cursor.execute("""
-                INSERT INTO counselling_responses (request_id, teacher_response, completed_at)
-                VALUES (%s, %s, %s)
-                ON DUPLICATE KEY UPDATE
-                    teacher_response = VALUES(teacher_response),
-                    completed_at = VALUES(completed_at)
-            """, (request_id, teacher_msg, datetime.now()))
+                # 2️⃣ Update response tracking
+                cursor.execute("""
+                    INSERT INTO counselling_responses (request_id, teacher_response, completed_at)
+                    VALUES (%s, %s, %s)
+                    ON DUPLICATE KEY UPDATE
+                        teacher_response=VALUES(teacher_response),
+                        completed_at=VALUES(completed_at)
+                """, (request_id, teacher_msg, datetime.now()))
 
-            cursor.execute("""
-                UPDATE counselling_requests
-                SET status='Completed'
-                WHERE id=%s
-            """, (request_id,))
+                # 3️⃣ Update request status
+                cursor.execute("""
+                    UPDATE counselling_requests
+                    SET status='Teacher Responded'
+                    WHERE id=%s AND is_closed=0
+                """, (request_id,))
 
             return redirect(f"/teacher/reply/{request_id}")
 
+    # ===== Load Chat =====
     cursor.execute("""
         SELECT sender_role, message, created_at
         FROM counselling_messages
-        WHERE request_id=%s
-        ORDER BY created_at
+        WHERE request_id=%s ORDER BY created_at
     """, (request_id,))
     messages = cursor.fetchall()
 
@@ -396,6 +416,7 @@ def teacher_reply(request_id):
         "teacher/reply.html",
         messages=messages,
         ai_text=ai_text,
+        closed=closed,
         request_id=request_id,
         name=session["name"]
     )
@@ -504,7 +525,48 @@ Summary:
 @app.route("/admin/dashboard")
 @login_required("admin")
 def admin_dashboard():
-    return render_template("admin/dashboard.html", name=session["name"])
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    # Status chart data
+    cursor.execute("""
+        SELECT 
+            SUM(CASE WHEN is_closed = 1 THEN 1 ELSE 0 END) AS ended,
+            SUM(CASE WHEN status = 'Teacher Responded' AND is_closed = 0 THEN 1 ELSE 0 END) AS responded,
+            SUM(CASE WHEN status = 'Pending' AND is_closed = 0 THEN 1 ELSE 0 END) AS pending
+        FROM counselling_requests
+    """)
+    status_counts = cursor.fetchone()
+
+    # Feedback List (always anonymous student)
+    cursor.execute("""
+    SELECT 
+        COALESCE(MAX(u.UserName), 'Unknown Teacher') AS teacher_name,
+        MAX(cres.student_feedback) AS student_feedback,
+        MAX(cres.student_rating) AS student_rating
+    FROM counselling_responses cres
+    JOIN counselling_requests cr ON cres.request_id = cr.id
+    JOIN students s ON cr.student_id = s.id
+    LEFT JOIN teachers t ON s.assigned_teacher_id = t.id
+    LEFT JOIN users u ON t.user_id = u.id
+    WHERE cres.student_feedback IS NOT NULL
+      AND cres.student_feedback <> ''
+    GROUP BY cres.request_id
+    ORDER BY cres.request_id DESC
+    """)
+
+
+    feedbacks = cursor.fetchall()
+
+
+
+    return render_template(
+        "admin/dashboard.html",
+        name=session["name"],
+        status_counts=status_counts,
+        feedbacks=feedbacks
+    )
+
 
 @app.route("/admin/create-user", methods=["GET", "POST"])
 @login_required("admin")
@@ -574,13 +636,29 @@ def admin_sessions():
     cursor = db.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT u.UserName, cr.problem, cr.category,
-               cr.status, cr.created_at
-        FROM counselling_requests cr
-        JOIN students s ON cr.student_id = s.id
-        JOIN users u ON s.user_id = u.id
-        ORDER BY cr.created_at DESC
+    SELECT 
+        CASE 
+            WHEN COALESCE((
+                SELECT MAX(cm.confidential)
+                FROM counselling_messages cm
+                WHERE cm.request_id = cr.id
+                AND cm.sender_role='student'
+            ), 0) = 1
+            THEN 'Anonymous Student'
+            ELSE u.UserName
+        END AS student_name,
+        cr.problem,
+        cr.category,
+        cr.status,
+        cr.created_at
+    FROM counselling_requests cr
+    JOIN students s ON cr.student_id = s.id
+    JOIN users u ON s.user_id = u.id
+    ORDER BY cr.created_at DESC
     """)
+
+
+
 
     sessions = cursor.fetchall()
     return render_template("admin/sessions.html", sessions=sessions)
@@ -591,28 +669,51 @@ def admin_analytics():
     db = get_db()
     cursor = db.cursor()
 
-    cursor.execute("SELECT status, COUNT(*) FROM counselling_requests GROUP BY status")
+    # Status chart (Pending / Responded / Ended)
+    cursor.execute("""
+        SELECT 
+            CASE
+                WHEN cr.is_closed = 1 THEN 'Ended'
+                WHEN cr.status = 'Teacher Responded' THEN 'Responded'
+                ELSE 'Pending'
+            END AS status_label,
+            COUNT(*) AS total
+        FROM counselling_requests cr
+        GROUP BY status_label
+    """)
     status_data = cursor.fetchall()
 
-    cursor.execute("SELECT category, COUNT(*) FROM counselling_requests GROUP BY category")
+    # Category chart
+    cursor.execute("""
+        SELECT category, COUNT(*)
+        FROM counselling_requests
+        GROUP BY category
+    """)
     category_data = cursor.fetchall()
 
+    # Feedback list (anonymous students)
     cursor.execute("""
-        SELECT u.UserName, COUNT(cres.id)
+        SELECT 
+            COALESCE(u.UserName, 'Unknown Teacher') AS teacher_name,
+            cres.student_feedback,
+            cres.student_rating
         FROM counselling_responses cres
         JOIN counselling_requests cr ON cres.request_id = cr.id
         JOIN students s ON cr.student_id = s.id
-        JOIN teachers t ON s.assigned_teacher_id = t.id
-        JOIN users u ON t.user_id = u.id
-        GROUP BY u.UserName
+        LEFT JOIN teachers t ON s.assigned_teacher_id = t.id
+        LEFT JOIN users u ON t.user_id = u.id
+        WHERE cres.student_feedback IS NOT NULL
+          AND cres.student_feedback <> ''
+        ORDER BY cres.id DESC
     """)
-    teacher_data = cursor.fetchall()
+    feedbacks = cursor.fetchall()
 
     return {
         "status": status_data,
         "category": category_data,
-        "teachers": teacher_data
+        "feedbacks": feedbacks
     }
+
 
 # ======================================================
 # ===================== GEMMA AI =======================

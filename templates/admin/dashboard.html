@@ -104,7 +104,7 @@
 
             let options = {
                 title: 'Counselling Status',
-                colors: ['#c62828', '#2e7d32'],
+                colors: ['#2e7d32', '#c62828', '#ff9800'], // Pending, Responded, Completed
                 backgroundColor: 'transparent'
             };
 
@@ -113,6 +113,7 @@
             );
             chart.draw(data, options);
         }
+
 
         function drawCategoryChart(categoryData) {
             let data = new google.visualization.DataTable();
@@ -171,9 +172,39 @@
             <div id="statusChart" style="width: 450px; height: 300px;"></div>
             <div id="categoryChart" style="width: 450px; height: 300px;"></div>
         </div>
+
+        {% if feedbacks %}
+        <hr style="margin:25px 0;">
+        <h3 style="color:#c62828;">Student Feedback</h3>
+
+        <table border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse:collapse;">
+            <tr style="background:#ef5350; color:white;">
+               <th>Teacher</th>
+               <th>Rating</th>
+               <th>Feedback Message</th>
+            </tr>
+
+            {% for fb in feedbacks %}
+            <tr>
+                <td>{{ fb.teacher_name }}</td> <!-- ALWAYS teacher -->
+                <td>
+                    {% if fb.student_rating %}
+                      ⭐ {{ fb.student_rating }}/5
+                    {% else %}
+                      -
+                    {% endif %}
+                </td>
+                <td>{{ fb.student_feedback }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        {% endif %}
     </div>
 
 </div>
 
 </body>
 </html>
+
+

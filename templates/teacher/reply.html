@@ -74,6 +74,10 @@
             font-weight: bold;
             cursor: pointer;
         }
+        .ai-btn {
+            background: #1b5e20;
+            margin-left: 5px;
+        }
         .closed {
             background: #f44336;
             color: white;
@@ -81,6 +85,7 @@
             border-radius: 5px;
             font-weight: bold;
             margin-bottom: 15px;
+            text-align: center;
         }
         .feedback-box {
             margin-top: 20px;
@@ -88,6 +93,13 @@
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #2e7d32;
+            text-decoration: none;
         }
     </style>
 </head>
@@ -118,15 +130,15 @@
         {% endfor %}
     </div>
 
-    <!-- If chat is closed, show message + feedback -->
     {% if closed == 1 %}
+        <!-- Chat ended -->
         <div class="closed">
-            🛑 Chat Closed — No further messages allowed
+            🔒 CHAT ENDED
         </div>
 
         {% if feedback or rating %}
         <div class="feedback-box">
-            <h3>Student Feedback ⭐</h3>
+            <h3>⭐ Student Feedback</h3>
             {% if rating %}
                 <p><b>Rating:</b> {{ "⭐" * rating }}</p>
             {% endif %}
@@ -136,25 +148,24 @@
         </div>
         {% endif %}
 
-        <a href="/teacher/history">⬅ Back to History</a>
+        <a class="back-link" href="/teacher/history">⬅ Back to History</a>
+
     {% else %}
+        <!-- Chat open -->
+        <form method="POST">
+            <textarea name="message" placeholder="Type your reply..." required></textarea>
+            <button name="send_reply" type="submit">Send Reply</button>
+            <button name="generate_ai" type="submit" class="ai-btn">Ask AI Suggestion</button>
+        </form>
 
-    <!-- If chat open, reply form + AI -->
-    <form method="POST">
-        <textarea name="message" placeholder="Type your reply..." required></textarea>
-        <button name="send_reply" type="submit">Send Reply</button>
-        <button name="generate_ai" type="submit" style="background:#1b5e20">Ask AI Suggestion</button>
-    </form>
-
-    {% if ai_text %}
+        {% if ai_text %}
         <div class="chat-box" style="margin-top:15px; background:#e8f5e9">
             <b>AI Suggestion:</b>
             <p>{{ ai_text }}</p>
         </div>
-    {% endif %}
+        {% endif %}
 
-    <a href="/teacher/request">⬅ Back to Requests</a>
-
+        <a class="back" href="/teacher/history">⬅ Back to History</a>
     {% endif %}
 
 </div>

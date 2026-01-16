@@ -100,11 +100,11 @@
         <form method="POST" action="/teacher/reply/{{ selected_request_id }}">
 
             <h3>AI Suggested Response (Editable)</h3>
-            <textarea>{{ ai_text }}</textarea>
+            <textarea name="ai-text">{{ ai_text }}</textarea>
 
             <h3>Teacher Final Response</h3>
             <!-- 🔥 BACKEND EXPECTS name="message" -->
-            <textarea name="message" required></textarea>
+            <textarea name="message" required>{{ai_text}}</textarea>
 
             <!-- 🔥 BACKEND EXPECTS name="send_reply" -->
             <button type="submit" name="send_reply">
