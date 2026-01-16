@@ -47,6 +47,9 @@
             cursor: pointer;
             font-weight: bold;
         }
+        .end-btn {
+            background: #d84315;
+        }
         a {
             display: inline-block;
             margin-top: 20px;
@@ -70,9 +73,17 @@
         </div>
     {% endfor %}
 
+    <!-- Student message box -->
     <form method="POST">
         <textarea name="message" placeholder="Type your reply..." required></textarea>
         <button type="submit">Send Reply</button>
+    </form>
+
+    <!-- End chat button -->
+    <form method="POST" action="/student/end_chat/{{ request_id }}" style="margin-top:12px;">
+        <button type="submit" class="end-btn">
+            End Chat & Give Feedback
+        </button>
     </form>
 
     <a href="/student/history">⬅ Back to History</a>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feedback</title>
+    <style>
+        body { background:#fbe9e7; font-family:Arial; margin:0; }
+        .container { padding:30px; }
+        .card {
+            background:#fff;
+            padding:25px;
+            border-radius:8px;
+            box-shadow:0 4px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            margin-top:10px;
+            padding:8px 16px;
+            background:#c62828;
+            color:white;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+            font-weight:bold;
+        }
+        .star { font-size:22px; cursor:pointer; color:#ccc }
+        .star.selected { color:gold }
+    </style>
+</head>
+<body>
+    
+<div class="container">
+    <div class="card">
+        <h2>Rate Your Counselling Experience</h2>
+
+        <form method="POST">
+
+            <label><b>Feedback Comments</b></label>
+            <textarea name="feedback" rows="5" style="width:100%;margin-top:8px;"></textarea>
+
+            <label style="margin-top:10px;"><b>Rating</b></label><br>
+            <div id="stars">
+                <span class="star" data-value="1">&#9733;</span>
+                <span class="star" data-value="2">&#9733;</span>
+                <span class="star" data-value="3">&#9733;</span>
+                <span class="star" data-value="4">&#9733;</span>
+                <span class="star" data-value="5">&#9733;</span>
+            </div>
+
+            <input type="hidden" name="rating" id="rating_value" value="0">
+
+            <button type="submit">Submit Feedback</button>
+        </form>
+    </div>
+</div>
+
+<script>
+const stars = document.querySelectorAll(".star");
+stars.forEach(s => {
+    s.addEventListener("click", function() {
+        let val = this.dataset.value;
+        document.getElementById("rating_value").value = val;
+        stars.forEach(star => {
+            star.classList.remove("selected");
+            if (star.dataset.value <= val) star.classList.add("selected");
+        });
+    });
+});
+</script>
+
+</body>
+</html>

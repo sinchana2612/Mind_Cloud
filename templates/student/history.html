@@ -125,7 +125,7 @@
             <form action="/student/mark_confidential/{{ h.id }}" method="POST" style="display:flex;align-items:center;">
                 <label style="font-size:13px;">
                    <input type="checkbox" name="confidential" value="1"
-                        {% if h.confidential == 1 %}checked{% endif %}>
+                        {% if h.confidential == 1 %} checked{% endif %}>
 
                     Hide My Identity
                 </label>

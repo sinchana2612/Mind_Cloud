@@ -108,6 +108,7 @@ def student_request():
 
     return render_template("student/request.html")
 
+
 @app.route("/student/history")
 @login_required("student")
 def student_history():
@@ -149,6 +150,7 @@ def mark_confidential(request_id):
 
     return redirect("/student/history")
 
+
 @app.route("/student/reply/<int:request_id>", methods=["GET", "POST"])
 @login_required("student")
 def student_reply(request_id):
@@ -162,7 +164,6 @@ def student_reply(request_id):
         """, (request_id, request.form["message"]))
         return redirect(f"/student/reply/{request_id}")
 
-    # Load messages
     cursor.execute("""
         SELECT sender_role, message, created_at
         FROM counselling_messages
@@ -170,7 +171,6 @@ def student_reply(request_id):
     """, (request_id,))
     messages = cursor.fetchall()
 
-    # Check if teacher has replied
     cursor.execute("SELECT teacher_response, student_rating FROM counselling_responses WHERE request_id=%s",
                    (request_id,))
     cres = cursor.fetchone()
@@ -184,21 +184,41 @@ def student_reply(request_id):
                            current_rating=rating,
                            name=session["name"])
 
-@app.route("/student/rate/<int:request_id>", methods=["POST"])
+@app.route("/student/end_chat/<int:request_id>", methods=["POST"])
 @login_required("student")
-def student_rate(request_id):
+def end_chat(request_id):
     db = get_db()
     cursor = db.cursor()
 
-    rating = int(request.form["rating"])
-
     cursor.execute("""
-        UPDATE counselling_responses
-        SET student_rating=%s
-        WHERE request_id=%s
-    """, (rating, request_id))
+        UPDATE counselling_requests
+        SET status='Completed'
+        WHERE id=%s
+    """, (request_id,))
 
-    return redirect(f"/student/reply/{request_id}")
+    return redirect(f"/student/feedback/{request_id}")
+
+
+@app.route("/student/feedback/<int:request_id>", methods=["GET", "POST"])
+@login_required("student")
+def student_feedback(request_id):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    if request.method == "POST":
+        feedback = request.form["feedback"]
+        rating = request.form.get("rating") or None
+
+        cursor.execute("""
+            UPDATE counselling_responses
+            SET student_feedback=%s,
+                student_rating=%s
+            WHERE request_id=%s
+        """, (feedback, rating, request_id))
+
+        return redirect("/student/history")
+
+    return render_template("student/feedback.html", request_id=request_id)
 
 # ======================================================
 # ===================== TEACHER ========================
@@ -226,6 +246,7 @@ def teacher_dashboard():
     return render_template("teacher/dashboard.html",
                            name=session["name"],
                            new_messages=new_messages)
+
 
 @app.route("/teacher/request", methods=["GET", "POST"])
 @login_required("teacher")
@@ -277,7 +298,8 @@ def teacher_request():
                            ai_text=ai_text,
                            selected_request_id=selected_request_id,
                            name=session["name"])
-                           
+
+
 @app.route("/teacher/history")
 @login_required("teacher")
 def teacher_history():
@@ -315,6 +337,7 @@ def teacher_history():
         history=history,
         name=session["name"]
     )
+
 
 @app.route("/teacher/reply/<int:request_id>", methods=["GET", "POST"])
 @login_required("teacher")
@@ -377,6 +400,7 @@ def teacher_reply(request_id):
         name=session["name"]
     )
 
+
 @app.route("/teacher/export_excel")
 @login_required("teacher")
 def export_excel():
@@ -434,8 +458,8 @@ def export_excel():
     ws.append([
         "Student Name", "Problem", "Category",
         "Messages Combined", "Counselling Date",
-        "Teacher Resolution", "Student Feedback",
-        "Student Rating ⭐", "AI Summary", "Confidential"
+        "Teacher Resolution", "Student Feedback", "Student Rating",
+        "AI Summary", "Confidential"
     ])
 
     for rid, data in grouped.items():
@@ -457,8 +481,8 @@ Summary:
             name, data["problem"], data["category"],
             conversation, data["created_at"].strftime("%Y-%m-%d %H:%M"),
             data["teacher_response"] or "",
-            data["student_feedback"] or "",
-            data["student_rating"] if data["student_rating"] else "",
+            data.get("student_feedback") or "",
+            data.get("student_rating") or "",
             summary,
             "YES" if is_conf else "NO"
         ])

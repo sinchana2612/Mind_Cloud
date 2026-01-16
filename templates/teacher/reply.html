@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Chat with Teacher</title>
+    <title>Reply to Student</title>
 
-    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-482XK0D475"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -15,11 +14,11 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #fbe9e7;
+            background: #e8f5e9;
             margin: 0;
         }
         .navbar {
-            background: #c62828;
+            background: #2e7d32;
             color: white;
             padding: 12px 25px;
             display: flex;
@@ -68,36 +67,39 @@
         button {
             margin-top: 10px;
             padding: 10px 16px;
-            background: #c62828;
+            background: #2e7d32;
             color: white;
             border: none;
             border-radius: 4px;
             font-weight: bold;
             cursor: pointer;
         }
-        .rating-block {
+        .closed {
+            background: #f44336;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .feedback-box {
+            margin-top: 20px;
             background: white;
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-            margin-top: 20px;
-        }
-        .stars label {
-            font-size: 22px;
-            cursor: pointer;
-            margin-right: 5px;
         }
     </style>
 </head>
 <body>
 
 <div class="navbar">
-    <span>Student Panel</span>
+    <span>Teacher Panel</span>
     <div>
-        <a href="/student/dashboard">Dashboard</a>
-        <a href="/student/request">Request</a>
-        <a href="/student/history">History</a>
-        <a href="/logout" class="logout">Logout</a>
+        <a href="/teacher/dashboard">Dashboard</a>
+        <a href="/teacher/request">Requests</a>
+        <a href="/teacher/history">History</a>
+        <a href="/logout">Logout</a>
     </div>
 </div>
 
@@ -116,34 +118,43 @@
         {% endfor %}
     </div>
 
-    <!-- Send Message -->
+    <!-- If chat is closed, show message + feedback -->
+    {% if closed == 1 %}
+        <div class="closed">
+            🛑 Chat Closed — No further messages allowed
+        </div>
+
+        {% if feedback or rating %}
+        <div class="feedback-box">
+            <h3>Student Feedback ⭐</h3>
+            {% if rating %}
+                <p><b>Rating:</b> {{ "⭐" * rating }}</p>
+            {% endif %}
+            {% if feedback %}
+                <p><b>Message:</b> {{ feedback }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <a href="/teacher/history">⬅ Back to History</a>
+    {% else %}
+
+    <!-- If chat open, reply form + AI -->
     <form method="POST">
-        <textarea name="message" placeholder="Type your message..." required></textarea>
-        <button type="submit">Send</button>
+        <textarea name="message" placeholder="Type your reply..." required></textarea>
+        <button name="send_reply" type="submit">Send Reply</button>
+        <button name="generate_ai" type="submit" style="background:#1b5e20">Ask AI Suggestion</button>
     </form>
 
-    <!-- ⭐ Rate Session -->
-    {% if teacher_replied %}
-    <div class="rating-block">
-        <h3>Rate This Counselling Session ⭐</h3>
+    {% if ai_text %}
+        <div class="chat-box" style="margin-top:15px; background:#e8f5e9">
+            <b>AI Suggestion:</b>
+            <p>{{ ai_text }}</p>
+        </div>
+    {% endif %}
 
-        {% if current_rating %}
-            <p><b>Your Rating:</b> {{ "⭐" * current_rating }}</p>
-        {% endif %}
+    <a href="/teacher/request">⬅ Back to Requests</a>
 
-        {% if not current_rating %}
-        <form method="POST" action="/student/rate/{{ request_id }}">
-            <div class="stars">
-                <label><input type="radio" name="rating" value="1"> ⭐</label>
-                <label><input type="radio" name="rating" value="2"> ⭐⭐</label>
-                <label><input type="radio" name="rating" value="3"> ⭐⭐⭐</label>
-                <label><input type="radio" name="rating" value="4"> ⭐⭐⭐⭐</label>
-                <label><input type="radio" name="rating" value="5"> ⭐⭐⭐⭐⭐</label>
-            </div>
-            <button type="submit">Submit Rating</button>
-        </form>
-        {% endif %}
-    </div>
     {% endif %}
 
 </div>
