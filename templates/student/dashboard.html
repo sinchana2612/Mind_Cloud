@@ -33,7 +33,6 @@
         .navbar .brand {
             font-size: 18px;
             font-weight: 600;
-            letter-spacing: 0.4px;
         }
 
         .navbar a {
@@ -63,13 +62,14 @@
             justify-content: center;
         }
 
+        /* 🔥 EXPANDED CARD */
         .card {
             background: #ffffff;
-            padding: 30px;
+            padding: 32px;
             border-radius: 14px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.12);
             width: 100%;
-            max-width: 600px;
+            max-width: 760px; /* expanded */
             animation: fadeIn 0.5s ease;
         }
 
@@ -85,7 +85,7 @@
         }
 
         .info {
-            margin: 14px 0;
+            margin: 16px 0;
             background: #F0F4F3;
             padding: 14px;
             border-radius: 10px;
@@ -97,14 +97,20 @@
             color: #444;
         }
 
+        /* ✅ ONE-LINE BUTTON FIX */
         .actions {
-            margin-top: 26px;
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: nowrap; /* 🔒 single line */
         }
 
         .actions a {
-            display: inline-block;
-            margin-right: 15px;
-            padding: 12px 22px;
+            flex: 1;
+            text-align: center;
+            padding: 12px 18px;
             background: linear-gradient(90deg, #5F8D7E, #7DAA92);
             color: white;
             border-radius: 25px;
@@ -112,6 +118,7 @@
             font-weight: 600;
             letter-spacing: 0.3px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            white-space: nowrap;
         }
 
         .actions a:hover {
@@ -165,7 +172,6 @@
             <a href="/student/request">Request Counselling</a>
             <a href="/student/history">View History</a>
             <a href="/student/teacher_requests">Teacher Counselling Requests</a>
-
         </div>
     </div>
 </div>

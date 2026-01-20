@@ -5,7 +5,7 @@
 
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Segoe UI", Arial, sans-serif;
             background: #F4F6F5; /* soft grey */
             margin: 0;
             color: #3A3A3A;
@@ -13,106 +13,94 @@
 
         /* ===== NAVBAR ===== */
         .navbar {
-            background: #7FA99B; /* sage green */
+            background: linear-gradient(90deg, #5F8D7E, #7FA99B);
             color: white;
-            padding: 12px 25px;
+            padding: 14px 28px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
         }
 
         .navbar .brand {
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 600;
             letter-spacing: 0.4px;
         }
 
         .navbar a {
             color: white;
-            margin-left: 20px;
+            margin-left: 22px;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 500;
             position: relative;
-            transition: color 0.25s ease, transform 0.2s ease;
+            transition: opacity 0.25s ease, transform 0.25s ease;
         }
 
         .navbar a:hover {
-            color: #EAF4F1;
+            opacity: 0.85;
             transform: translateY(-1px);
-        }
-
-        .navbar a::after {
-            content: "";
-            position: absolute;
-            width: 0%;
-            height: 2px;
-            bottom: -4px;
-            left: 0;
-            background: #EAF4F1;
-            transition: width 0.25s ease;
-        }
-
-        .navbar a:hover::after {
-            width: 100%;
         }
 
         .navbar .logout {
             background: white;
-            color: #5F8F82;
-            padding: 6px 14px;
-            border-radius: 18px;
+            color: #5F8D7E;
+            padding: 6px 16px;
+            border-radius: 22px;
+            font-weight: 600;
             transition: all 0.25s ease;
         }
 
         .navbar .logout:hover {
             background: #EAF4F1;
-            color: #4F7E72;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         /* ===== CONTENT ===== */
         .container {
-            padding: 40px;
+            padding: 50px;
             display: flex;
             justify-content: center;
         }
 
         .card {
-            background: white;
-            width: 420px;
-            padding: 28px;
-            border-radius: 12px;
-            box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+            background: #ffffff;
+            width: 460px;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+            animation: fadeIn 0.4s ease;
         }
 
         h2 {
-            color: #5F8F82;
+            color: #5F8D7E;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 22px;
+            font-weight: 600;
         }
 
         label {
-            font-weight: bold;
+            font-weight: 600;
             display: block;
-            margin-top: 15px;
+            margin-top: 18px;
+            color: #3F4F4B;
         }
 
         select, textarea {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-top: 8px;
-            border-radius: 6px;
+            border-radius: 10px;
             border: 1px solid #C9D6D2;
             background: #F9FBFA;
-            transition: border 0.2s ease, box-shadow 0.2s ease;
+            font-size: 14px;
+            transition: border 0.3s ease, box-shadow 0.3s ease;
         }
 
         select:focus, textarea:focus {
             outline: none;
             border-color: #7FA99B;
-            box-shadow: 0 0 0 2px rgba(127,169,155,0.2);
+            box-shadow: 0 0 0 3px rgba(127,169,155,0.25);
         }
 
         textarea {
@@ -122,30 +110,42 @@
         .success {
             background: #EAF4F1;
             color: #4F7E72;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 18px;
             text-align: center;
-            font-weight: bold;
+            font-weight: 600;
+            border-left: 4px solid #7FA99B;
         }
 
         button {
-            margin-top: 22px;
+            margin-top: 26px;
             width: 100%;
-            padding: 10px;
-            background: #7FA99B;
+            padding: 12px;
+            background: linear-gradient(90deg, #5F8D7E, #7FA99B);
             color: white;
             border: none;
-            border-radius: 22px;
-            font-weight: bold;
+            border-radius: 26px;
+            font-weight: 600;
+            font-size: 15px;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         button:hover {
-            background: #5F8F82;
-            transform: translateY(-1px);
-            box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -172,63 +172,60 @@
 
         <form method="POST">
 
-    <label>Select Student</label>
-    <select name="student_id"
-            {% if request.args.student_id %}readonly disabled{% endif %}
-            required>
-        <option value="">-- Select Student --</option>
-        {% for s in students %}
-        <option value="{{ s.id }}"
-            {% if request.args.student_id and s.id == request.args.student_id|int %}
-                selected
-            {% endif %}>
-            {{ s.UserName }}
-        </option>
-        {% endfor %}
-    </select>
+            <label>Select Student</label>
+            <select name="student_id"
+                    {% if request.args.student_id %}readonly disabled{% endif %}
+                    required>
+                <option value="">-- Select Student --</option>
+                {% for s in students %}
+                <option value="{{ s.id }}"
+                    {% if request.args.student_id and s.id == request.args.student_id|int %}
+                        selected
+                    {% endif %}>
+                    {{ s.UserName }}
+                </option>
+                {% endfor %}
+            </select>
 
-    {# IMPORTANT: ensure student_id is still submitted if disabled #}
-    {% if request.args.student_id %}
-        <input type="hidden" name="student_id" value="{{ request.args.student_id }}">
-    {% endif %}
+            {% if request.args.student_id %}
+                <input type="hidden" name="student_id" value="{{ request.args.student_id }}">
+            {% endif %}
 
-    <label>Reason</label>
-    <select name="reason" required>
-        {% set preset_reason = request.args.reason %}
-        <option value="Academic"
-            {% if preset_reason == 'Academic' or preset_reason == 'Academic Performance' %}selected{% endif %}>
-            Academic
-        </option>
-        <option value="Personal"
-            {% if preset_reason == 'Personal' %}selected{% endif %}>
-            Personal
-        </option>
-        <option value="Behavioral"
-            {% if preset_reason == 'Behavioral' %}selected{% endif %}>
-            Behavioral
-        </option>
-        <option value="Career"
-            {% if preset_reason == 'Career' %}selected{% endif %}>
-            Career
-        </option>
-        <option value="Mental Well-Being"
-            {% if preset_reason == 'Mental Well-Being' %}selected{% endif %}>
-            Mental Well-Being
-        </option>
-    </select>
+            <label>Reason</label>
+            <select name="reason" required>
+                {% set preset_reason = request.args.reason %}
+                <option value="Academic"
+                    {% if preset_reason == 'Academic' or preset_reason == 'Academic Performance' %}selected{% endif %}>
+                    Academic
+                </option>
+                <option value="Personal"
+                    {% if preset_reason == 'Personal' %}selected{% endif %}>
+                    Personal
+                </option>
+                <option value="Behavioral"
+                    {% if preset_reason == 'Behavioral' %}selected{% endif %}>
+                    Behavioral
+                </option>
+                <option value="Career"
+                    {% if preset_reason == 'Career' %}selected{% endif %}>
+                    Career
+                </option>
+                <option value="Mental Well-Being"
+                    {% if preset_reason == 'Mental Well-Being' %}selected{% endif %}>
+                    Mental Well-Being
+                </option>
+            </select>
 
-    <label>Message (Optional)</label>
-    <textarea name="message" rows="4">{% if request.args.student_id %}
+            <label>Message (Optional)</label>
+            <textarea name="message" rows="4">{% if request.args.student_id %}
 Based on your recent marks and attendance records, a counselling session is recommended.
 {% endif %}</textarea>
 
-    <button type="submit">Send Request</button>
+            <button type="submit">Send Request</button>
 
-</form>
-
+        </form>
     </div>
 </div>
 
 </body>
 </html>
-

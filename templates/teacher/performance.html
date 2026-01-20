@@ -2,49 +2,140 @@
 <html>
 <head>
     <title>Student Performance</title>
+
     <style>
-        .bad { color: red; font-weight: bold; }
-        .avg { color: orange; }
-        .good { color: green; }
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #F4F6F8;
+            margin: 0;
+            color: #3A3A3A;
+        }
+
+        .container {
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        h2 {
+            color: #5F8D7E;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        /* ===== TABLE ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid #E2E6E4;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #EEF4F1;
+            color: #4E6E63;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #F7FAF9;
+        }
+
+        /* ===== COLUMN WIDTHS ===== */
+        th:nth-child(1), td:nth-child(1) { width: 18%; }
+        th:nth-child(2), td:nth-child(2) { width: 16%; }
+        th:nth-child(3), td:nth-child(3) { width: 10%; }
+        th:nth-child(4), td:nth-child(4) { width: 14%; }
+        th:nth-child(5), td:nth-child(5) { width: 18%; }
+        th:nth-child(6), td:nth-child(6) {
+            width: 24%;
+            text-align: center;
+            white-space: normal;   /* ✅ FIX */
+        }
+
+        /* ===== STATUS COLORS ===== */
+        .bad { color: #C62828; font-weight: 600; }
+        .avg { color: #F57C00; font-weight: 600; }
+        .good { color: #2E7D32; font-weight: 600; }
+
+        /* ===== BUTTON ===== */
+        a {
+            display: inline-block;
+            padding: 10px 18px;
+            border-radius: 24px;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid #7DAA92;
+            color: #5F8D7E;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        a:hover {
+            background: #7DAA92;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
 
-<h2>📊 Student Performance</h2>
+<div class="container">
+    <div class="card">
 
-<table border="1" cellpadding="8">
-<tr>
-    <th>Student</th>
-    <th>Subject</th>
-    <th>Marks</th>
-    <th>Attendance</th>
-    <th>Status</th>
-    <th>Action</th>
-</tr>
+        <h2>📊 Student Performance</h2>
 
-{% for p in performances %}
-<tr>
-    <td>{{ p.student_name }}</td>
-    <td>{{ p.subject }}</td>
-    <td>{{ p.marks }}</td>
-    <td>{{ p.attendance_percentage }}%</td>
+        <table>
+            <tr>
+                <th>Student</th>
+                <th>Subject</th>
+                <th>Marks</th>
+                <th>Attendance</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
 
-    <td class="{% if p.category == 'Needs Counselling' %}bad{% elif p.category == 'Average' %}avg{% else %}good{% endif %}">
-        {{ p.category }}
-    </td>
+            {% for p in performances %}
+            <tr>
+                <td>{{ p.student_name }}</td>
+                <td>{{ p.subject }}</td>
+                <td>{{ p.marks }}</td>
+                <td>{{ p.attendance_percentage }}%</td>
 
-    <td>
-        {% if p.category == 'Needs Counselling' %}
-            <a href="/teacher/performance/request/{{ p.student_id }}">
-                Send Counselling Request
-            </a>
-        {% else %}
-            -
-        {% endif %}
-    </td>
-</tr>
-{% endfor %}
-</table>
+                <td class="{% if p.category == 'Needs Counselling' %}bad{% elif p.category == 'Average' %}avg{% else %}good{% endif %}">
+                    {{ p.category }}
+                </td>
+
+                <td>
+                    {% if p.category == 'Needs Counselling' %}
+                        <a href="/teacher/performance/request/{{ p.student_id }}">
+                            Send Counselling Request
+                        </a>
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+</div>
 
 </body>
 </html>
