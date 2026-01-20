@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Counselling Requests</title>
+</head>
+<body>
+
+<h2>Counselling Requests from Teachers</h2>
+
+{% if requests %}
+<table border="1" cellpadding="8">
+<tr>
+    <th>Teacher</th>
+    <th>Reason</th>
+    <th>Message</th>
+    <th>Date</th>
+    <th>Status</th>
+    <th>Action</th>
+</tr>
+
+{% for r in requests %}
+<tr>
+    <td>{{ r.teacher_name }}</td>
+    <td>{{ r.reason }}</td>
+    <td>{{ r.message or "-" }}</td>
+    <td>{{ r.created_at }}</td>
+    <td>{{ r.status }}</td>
+    <td>
+        {% if r.status == 'Pending' %}
+        <form method="POST" action="/student/respond_request/{{ r.id }}/Accepted" style="display:inline;">
+            <button type="submit">Accept</button>
+        </form>
+        <form method="POST" action="/student/respond_request/{{ r.id }}/Rejected" style="display:inline;">
+            <button type="submit">Reject</button>
+        </form>
+        {% else %}
+        —
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+</table>
+{% else %}
+<p>No requests.</p>
+{% endif %}
+
+</body>
+</html>

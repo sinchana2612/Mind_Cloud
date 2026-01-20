@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Send Counselling Request</title>
+</head>
+<body>
+
+<h2>Send Counselling Request</h2>
+
+{% if success %}
+<p style="color:green;">{{ success }}</p>
+{% endif %}
+
+<form method="POST">
+
+    <label>Select Student</label><br>
+    <select name="student_id" required>
+        <option value="">-- Select Student --</option>
+        {% for s in students %}
+        <option value="{{ s.id }}">{{ s.UserName }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <label>Reason</label><br>
+    <select name="reason" required>
+        <option>Academic</option>
+        <option>Personal</option>
+        <option>Behavioral</option>
+        <option>Career</option>
+        <option>Mental Well-Being</option>
+    </select><br><br>
+
+    <label>Message (Optional)</label><br>
+    <textarea name="message" rows="4"></textarea><br><br>
+
+    <button type="submit">Send Request</button>
+
+</form>
+
+</body>
+</html>

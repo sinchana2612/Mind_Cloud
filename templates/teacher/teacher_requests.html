@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Responses</title>
+</head>
+<body>
+
+<h2>Student Responses to Your Requests</h2>
+
+{% if requests %}
+<table border="1" cellpadding="8">
+<tr>
+    <th>Student</th>
+    <th>Reason</th>
+    <th>Message</th>
+    <th>Status</th>
+    <th>Sent On</th>
+    <th>Responded On</th>
+</tr>
+
+{% for r in requests %}
+<tr>
+    <td>{{ r.student_name }}</td>
+    <td>{{ r.reason }}</td>
+    <td>{{ r.message or "-" }}</td>
+    <td>{{ r.status }}</td>
+    <td>{{ r.created_at }}</td>
+    <td>{{ r.responded_at or "-" }}</td>
+</tr>
+{% endfor %}
+</table>
+{% else %}
+<p>No requests sent.</p>
+{% endif %}
+
+</body>
+</html>

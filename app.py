@@ -116,6 +116,56 @@ def student_request():
         return redirect("/student/history")
 
     return render_template("student/request.html")
+@app.route("/student/teacher_requests")
+@login_required("student")
+def student_teacher_requests():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT id FROM students WHERE user_id=%s
+    """, (session["user_id"],))
+    student = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT
+            tcr.id,
+            u.UserName AS teacher_name,
+            tcr.reason,
+            tcr.message,
+            tcr.status,
+            tcr.created_at
+        FROM teacher_counselling_requests tcr
+        JOIN teachers t ON tcr.teacher_id = t.id
+        JOIN users u ON t.user_id = u.id
+        WHERE tcr.student_id = %s
+        ORDER BY tcr.created_at DESC
+    """, (student["id"],))
+
+    requests = cursor.fetchall()
+
+    return render_template(
+        "student/teacher_requests.html",
+        requests=requests,
+        name=session["name"]
+    )
+@app.route("/student/respond_request/<int:request_id>/<string:action>", methods=["POST"])
+@login_required("student")
+def student_respond_request(request_id, action):
+    if action not in ["Accepted", "Rejected"]:
+        return "Invalid action", 400
+
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""
+        UPDATE teacher_counselling_requests
+        SET status=%s, responded_at=NOW()
+        WHERE id=%s
+    """, (action, request_id))
+
+    return redirect("/student/teacher_requests")
+
 
 @app.route("/student/history")
 @login_required("student")
@@ -314,6 +364,82 @@ def teacher_request():
                            ai_text=ai_text,
                            selected_request_id=selected_request_id,
                            name=session["name"])
+@app.route("/teacher/send_request", methods=["GET", "POST"])
+@login_required("teacher")
+def teacher_send_request():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    # Get teacher id
+    cursor.execute("SELECT id FROM teachers WHERE user_id=%s", (session["user_id"],))
+    teacher = cursor.fetchone()
+
+    if not teacher:
+        return "Teacher profile not found", 404
+
+    # Get students assigned to this teacher
+    cursor.execute("""
+        SELECT s.id, u.UserName
+        FROM students s
+        JOIN users u ON s.user_id = u.id
+        WHERE s.assigned_teacher_id = %s
+    """, (teacher["id"],))
+    students = cursor.fetchall()
+
+    if request.method == "POST":
+        student_id = request.form["student_id"]
+        reason = request.form["reason"]
+        message = request.form.get("message", "").strip()
+
+        cursor.execute("""
+            INSERT INTO teacher_counselling_requests
+            (teacher_id, student_id, reason, message)
+            VALUES (%s, %s, %s, %s)
+        """, (teacher["id"], student_id, reason, message))
+
+        return render_template(
+            "teacher/send_request.html",
+            students=students,
+            success="Counselling request sent successfully",
+            name=session["name"]
+        )
+
+    return render_template(
+        "teacher/send_request.html",
+        students=students,
+        name=session["name"]
+    )
+@app.route("/teacher/teacher_requests")
+@login_required("teacher")
+def teacher_view_requests():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+            tcr.id,
+            u.UserName AS student_name,
+            tcr.reason,
+            tcr.message,
+            tcr.status,
+            tcr.created_at,
+            tcr.responded_at
+        FROM teacher_counselling_requests tcr
+        JOIN students s ON tcr.student_id = s.id
+        JOIN users u ON s.user_id = u.id
+        JOIN teachers t ON tcr.teacher_id = t.id
+        WHERE t.user_id = %s
+        ORDER BY tcr.created_at DESC
+    """, (session["user_id"],))
+
+    requests = cursor.fetchall()
+
+    return render_template(
+        "teacher/teacher_requests.html",
+        requests=requests,
+        name=session["name"]
+    )
+
 
 @app.route("/teacher/history")
 @login_required("teacher")
