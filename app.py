@@ -123,31 +123,43 @@ def student_history():
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    cursor.execute("SELECT id FROM students WHERE user_id=%s",
-                   (session["user_id"],))
+    # 1️⃣ Get student safely
+    cursor.execute(
+        "SELECT id FROM students WHERE user_id=%s LIMIT 1",
+        (session["user_id"],)
+    )
     student = cursor.fetchone()
 
+    if not student:
+        return "Student profile not found. Please contact admin."
+
+    # 2️⃣ Now fetch history
     cursor.execute("""
-    SELECT 
-        cr.id, 
-        cr.problem, 
-        cr.category, 
-        cr.status,
-        cr.is_closed,
-        cr.created_at,
-        COALESCE((
-            SELECT MAX(cm.confidential)
-            FROM counselling_messages cm
-            WHERE cm.request_id = cr.id
-            AND cm.sender_role='student'
-        ),0) AS confidential
-    FROM counselling_requests cr
-    WHERE cr.student_id=%s
-    ORDER BY cr.created_at DESC
+        SELECT
+            cr.id,
+            cr.problem,
+            cr.category,
+            cr.status,
+            cr.is_closed,
+            cr.created_at,
+            COALESCE((
+                SELECT MAX(cm.confidential)
+                FROM counselling_messages cm
+                WHERE cm.request_id = cr.id
+                AND cm.sender_role='student'
+            ), 0) AS confidential
+        FROM counselling_requests cr
+        WHERE cr.student_id=%s
+        ORDER BY cr.created_at DESC
     """, (student["id"],))
 
     history = cursor.fetchall()
-    return render_template("student/history.html", history=history)
+
+    return render_template(
+        "student/history.html",
+        history=history
+    )
+
 
 @app.route("/student/reply/<int:request_id>", methods=["GET", "POST"])
 @login_required("student")

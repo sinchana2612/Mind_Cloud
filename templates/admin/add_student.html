@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Student Details</title>
+
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #F4F6F8;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+        .profile-card {
+            background: white;
+            padding: 35px;
+            width: 380px;
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+
+        h2 {
+            text-align: center;
+            color: #5F8D7E;
+            margin-bottom: 25px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #4E6E63;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px;
+            margin-top: 8px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            border: 1px solid #C9D6CF;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="profile-card">
+    <h2>Add Student Details</h2>
+
+    <form method="POST">
+        <label>Department</label>
+        <input type="text" name="department" required>
+
+        <label>Class</label>
+        <input type="text" name="class" required>
+
+        <label>Email</label>
+        <input type="email" name="email" required>
+
+        <button type="submit">Save Details</button>
+    </form>
+</div>
+
+</body>
+</html>
