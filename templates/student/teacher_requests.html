@@ -2,56 +2,210 @@
 <html>
 <head>
     <title>Teacher Counselling Requests</title>
+
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #F4F6F5; /* soft grey */
+            margin: 0;
+            color: #3A3A3A;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: linear-gradient(90deg, #5F8F82, #7FA99B);
+            color: white;
+            padding: 14px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 0.4px;
+        }
+
+        .navbar a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+            transition: opacity 0.25s ease, transform 0.2s ease;
+        }
+
+        .navbar a:hover {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+
+        .navbar a::after {
+            content: "";
+            position: absolute;
+            width: 0%;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background: rgba(255,255,255,0.8);
+            transition: width 0.25s ease;
+        }
+
+        .navbar a:hover::after {
+            width: 100%;
+        }
+
+        .navbar .logout {
+            background: white;
+            color: #5F8F82;
+            padding: 6px 14px;
+            border-radius: 18px;
+        }
+
+        /* ===== CONTENT ===== */
+        .container {
+            padding: 35px;
+        }
+
+        h2 {
+            color: #5F8F82;
+            margin-bottom: 22px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #E1E5E3;
+        }
+
+        th {
+            background: #7FA99B;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: #F0F4F2;
+        }
+
+        .status {
+            font-weight: bold;
+            color: #5F8F82;
+        }
+
+        button {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .btn-success {
+            background: #7FA99B;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #5F8F82;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-danger {
+            background: #B0B8B5;
+            color: white;
+            margin-left: 6px;
+        }
+
+        .btn-danger:hover {
+            background: #8F9A96;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .empty {
+            background: white;
+            padding: 22px;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+    </style>
 </head>
 <body>
 
-<h2>Counselling Requests from Teachers</h2>
+<!-- ===== NAVBAR ===== -->
+<div class="navbar">
+    <span class="brand">Student Panel</span>
+    <div>
+        <a href="/student/dashboard">Dashboard</a>
+        <a href="/student/history">History</a>
+        <a href="/student/request">Request</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</div>
 
-{% if requests %}
-<table border="1" cellpadding="8">
-<tr>
-    <th>Teacher</th>
-    <th>Reason</th>
-    <th>Message</th>
-    <th>Date</th>
-    <th>Status</th>
-    <th>Action</th>
-</tr>
+<div class="container">
+    <h2>Counselling Requests from Teachers</h2>
 
-{% for r in requests %}
-<tr>
-    <td>{{ r.teacher_name }}</td>
-    <td>{{ r.reason }}</td>
-    <td>{{ r.message or "-" }}</td>
-    <td>{{ r.created_at }}</td>
-    <td>{{ r.status }}</td>
-    <td>
-        {% if r.status == 'Pending' %}
-       <form method="POST" action="/student/request/{{ r.id }}" style="display:inline;">
-    <input type="hidden" name="action" value="accept">
-    <button type="submit" class="btn btn-success">
-        Accept
-    </button>
-</form>
+    {% if requests %}
+    <table>
+        <tr>
+            <th>Teacher</th>
+            <th>Reason</th>
+            <th>Message</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
 
-<form method="POST" action="/student/request/{{ r.id }}" style="display:inline;">
-    <input type="hidden" name="action" value="reject">
-    <button type="submit" class="btn btn-danger">
-        Reject
-    </button>
-</form>
+        {% for r in requests %}
+        <tr>
+            <td>{{ r.teacher_name }}</td>
+            <td>{{ r.reason }}</td>
+            <td>{{ r.message or "-" }}</td>
+            <td>{{ r.created_at }}</td>
+            <td class="status">{{ r.status }}</td>
+            <td>
+                {% if r.status == 'Pending' %}
+                <form method="POST" action="/student/request/{{ r.id }}" style="display:inline;">
+                    <input type="hidden" name="action" value="accept">
+                    <button type="submit" class="btn-success">Accept</button>
+                </form>
 
-
-        {% else %}
-        —
-        {% endif %}
-    </td>
-</tr>
-{% endfor %}
-</table>
-{% else %}
-<p>No requests.</p>
-{% endif %}
+                <form method="POST" action="/student/request/{{ r.id }}" style="display:inline;">
+                    <input type="hidden" name="action" value="reject">
+                    <button type="submit" class="btn-danger">Reject</button>
+                </form>
+                {% else %}
+                —
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <div class="empty">
+            <p>No counselling requests at the moment.</p>
+        </div>
+    {% endif %}
+</div>
 
 </body>
 </html>
