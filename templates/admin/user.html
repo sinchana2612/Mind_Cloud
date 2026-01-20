@@ -2,90 +2,190 @@
 <html>
 <head>
     <title>All Users</title>
+
     <!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-482XK0D475"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-482XK0D475');
-</script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-482XK0D475"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-482XK0D475');
+    </script>
 
     <style>
+        /* ================= BASE ================= */
         body {
-            font-family: Arial, sans-serif;
-            background: #fbe9e7;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #F4F6F8, #E6F2EC);
             margin: 0;
+            color: #2E2E2E;
         }
+
+        /* ================= NAVBAR ================= */
         .navbar {
-            background: #c62828;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
             color: white;
-            padding: 12px 25px;
+            padding: 14px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
         }
+
         .navbar .brand {
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 600;
+            letter-spacing: 0.6px;
         }
+
         .navbar a {
             color: white;
-            margin-left: 20px;
+            margin-left: 22px;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 500;
+            font-size: 14px;
+            position: relative;
         }
+
+        .navbar a::after {
+            content: "";
+            position: absolute;
+            width: 0%;
+            height: 2px;
+            left: 0;
+            bottom: -4px;
+            background: white;
+            transition: width 0.3s ease;
+        }
+
+        .navbar a:hover::after {
+            width: 100%;
+        }
+
         .navbar .logout {
             background: white;
-            color: #c62828;
-            padding: 6px 12px;
-            border-radius: 4px;
+            color: #5F8D7E;
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.3s ease;
         }
+
+        .navbar .logout:hover {
+            background: #EEF6F2;
+            transform: scale(1.05);
+        }
+
+        /* ================= CONTENT ================= */
         .container {
-            padding: 30px;
+            padding: 35px;
+            animation: fadeIn 0.6s ease-in;
         }
+
+        /* ================= CARD ================= */
         .card {
             background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            padding: 28px;
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+        }
+
         h2 {
-            color: #c62828;
+            color: #5F8D7E;
             margin-bottom: 20px;
+            font-weight: 600;
         }
+
+        /* ================= TABLE ================= */
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
         }
-        th, td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
+
         th {
-            background: #ef5350;
+            background: #7DAA92;
             color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
         }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #E0E0E0;
+        }
+
+        tr:hover {
+            background: #F4F9F7;
+        }
+
+        /* ================= ROLE BADGES ================= */
         .badge {
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 6px 12px;
+            border-radius: 14px;
             color: white;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
+            letter-spacing: 0.4px;
+            display: inline-block;
         }
-        .admin { background: #6a1b9a; }
-        .teacher { background: #2e7d32; }
-        .student { background: #0277bd; }
+
+        .admin {
+            background: #6A1B9A;
+        }
+
+        .teacher {
+            background: #2E7D32;
+        }
+
+        .student {
+            background: #0277BD;
+        }
+
+        /* ================= ACTION LINK ================= */
         .action-btn {
             text-decoration: none;
             font-weight: bold;
-            color: #c62828;
+            color: #5F8D7E;
+            transition: color 0.3s ease;
+        }
+
+        .action-btn:hover {
+            color: #3E6F5E;
+            text-decoration: underline;
+        }
+
+        /* ================= EMPTY STATE ================= */
+        p {
+            color: #666;
+            font-size: 15px;
+        }
+
+        /* ================= ANIMATION ================= */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
 <body>
 
+<!-- ===== NAVBAR ===== -->
 <div class="navbar">
     <span class="brand">Admin Panel</span>
     <div>
@@ -97,6 +197,7 @@
     </div>
 </div>
 
+<!-- ===== CONTENT ===== -->
 <div class="container">
     <div class="card">
         <h2>System Users</h2>
