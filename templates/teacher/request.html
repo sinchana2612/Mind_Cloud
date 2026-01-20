@@ -2,67 +2,111 @@
 <html>
 <head>
     <title>Teacher Requests</title>
+
     <!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-482XK0D475"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-482XK0D475');
-</script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-482XK0D475"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-482XK0D475');
+    </script>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #fbe9e7;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #F4F6F8;
             margin: 0;
         }
+
+        /* ===== HEADER ===== */
         .header {
-            background: #c62828;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
             color: white;
-            padding: 15px;
+            padding: 18px;
             text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
+
+        /* ===== CONTENT ===== */
         .container {
-            padding: 30px;
+            padding: 35px;
+            max-width: 900px;
+            margin: auto;
         }
+
         .card {
             background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            padding: 28px;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
         }
+
+        label {
+            font-weight: 600;
+            color: #4E6E63;
+        }
+
         select, textarea {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-top: 10px;
+            border-radius: 10px;
+            border: 1px solid #C9D4CF;
+            font-family: inherit;
         }
+
         textarea {
             height: 120px;
         }
+
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #7DAA92;
+            box-shadow: 0 0 0 2px rgba(125,170,146,0.25);
+        }
+
+        /* ===== BUTTONS ===== */
         button {
-            margin-top: 15px;
-            padding: 10px 18px;
-            background: #c62828;
+            margin-top: 18px;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 20px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+
         button:hover {
-            background: #b71c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
         }
+
         h3 {
-            margin-top: 20px;
-            color: #c62828;
+            margin-top: 25px;
+            color: #4E6E63;
         }
+
+        hr {
+            border: none;
+            height: 1px;
+            background: #E0E5E3;
+            margin: 25px 0;
+        }
+
+        /* ===== LINKS ===== */
         a {
             display: inline-block;
-            margin-top: 20px;
-            color: #c62828;
-            font-weight: bold;
+            margin-top: 25px;
+            color: #5F8D7E;
+            font-weight: 600;
             text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -91,12 +135,11 @@
                 Generate AI Suggestion
             </button>
         </form>
-        
 
         {% if ai_text %}
         <hr>
 
-        <!-- ===== FINAL TEACHER REPLY (GOES TO /teacher/reply/<id>) ===== -->
+        <!-- ===== FINAL TEACHER REPLY ===== -->
         <form method="POST" action="/teacher/reply/{{ selected_request_id }}">
 
             <h3>AI Suggested Response (Editable)</h3>
@@ -104,7 +147,7 @@
 
             <h3>Teacher Final Response</h3>
             <!-- 🔥 BACKEND EXPECTS name="message" -->
-            <textarea name="message" required>{{ai_text}}</textarea>
+            <textarea name="message" required>{{ ai_text }}</textarea>
 
             <!-- 🔥 BACKEND EXPECTS name="send_reply" -->
             <button type="submit" name="send_reply">

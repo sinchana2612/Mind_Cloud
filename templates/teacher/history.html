@@ -12,47 +12,121 @@
 </script>
 
 <style>
-    body { font-family: Arial, sans-serif; background: #fbe9e7; margin: 0; }
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #F4F6F8;
+        margin: 0;
+    }
+
+    /* ===== NAVBAR ===== */
     .navbar {
-        background: #c62828; color: white;
-        padding: 12px 25px;
-        display:flex; justify-content:space-between; align-items:center;
+        background: linear-gradient(90deg, #5F8D7E, #7DAA92);
+        color: white;
+        padding: 14px 25px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
-    .navbar a { color:white; margin-left:20px; text-decoration:none; font-weight:bold; }
-    .navbar .logout { background:white; color:#c62828; padding:6px 12px; border-radius:4px; }
+    .navbar a {
+        color:white;
+        margin-left:20px;
+        text-decoration:none;
+        font-weight:600;
+        transition: opacity 0.3s ease;
+    }
+    .navbar a:hover {
+        opacity: 0.85;
+        text-decoration: underline;
+    }
+    .navbar .logout {
+        background: rgba(255,255,255,0.18);
+        padding:6px 14px;
+        border-radius:20px;
+    }
 
-    .container{ padding:30px; }
-    .card{ background:white; padding:25px; border-radius:8px;
-        box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+    /* ===== CONTENT ===== */
+    .container{
+        padding:35px;
+    }
+    .card{
+        background:white;
+        padding:30px;
+        border-radius:14px;
+        box-shadow:0 10px 25px rgba(0,0,0,0.12);
+        animation: fadeIn 0.4s ease;
+    }
 
-    h2{ color:#c62828; margin-bottom:20px; }
+    h2{
+        color:#4E6E63;
+        margin-bottom:20px;
+    }
 
-    table{ width:100%; border-collapse:collapse; }
+    table{
+        width:100%;
+        border-collapse:collapse;
+    }
     th,td{
-        padding:12px; border-bottom:1px solid #ddd;
-        text-align:left; vertical-align:top;
+        padding:14px;
+        border-bottom:1px solid #E0E5E3;
+        text-align:left;
+        vertical-align:top;
     }
-    th{ background:#ef5350; color:white; }
+    th{
+        background:#E6F0EB;
+        color:#3F4F4B;
+        font-weight:700;
+    }
+
+    tr:hover {
+        background: #F1F5F3;
+    }
 
     .reply-btn{
-        background:#c62828; color:white;
-        padding:6px 14px; border-radius:4px;
-        text-decoration:none; font-weight:bold;
-        font-size:14px;
+        background: linear-gradient(90deg, #5F8D7E, #7DAA92);
+        color:white;
+        padding:7px 16px;
+        border-radius:20px;
+        text-decoration:none;
+        font-weight:600;
+        font-size:13px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display:inline-block;
     }
-    .reply-btn:hover{ background:#b71c1c; }
+    .reply-btn:hover{
+        transform: translateY(-2px);
+        box-shadow:0 6px 18px rgba(0,0,0,0.25);
+    }
 
     .disabled-btn{
-        background:#777 !important;
+        background:#999 !important;
         pointer-events:none;
         cursor:not-allowed;
     }
 
-    .pending{ color:#c62828; font-weight:bold; }
-    .completed{ color:green; font-weight:bold; }
-    .closed{ color:#777; font-weight:bold; }
+    .pending{
+        color:#C62828;
+        font-weight:700;
+    }
+    .completed{
+        color:#2E7D32;
+        font-weight:700;
+    }
+    .closed{
+        color:#777;
+        font-weight:700;
+    }
 
-    .date{ font-size:13px; color:#555; }
+    .date{
+        font-size:13px;
+        color:#555;
+        white-space:nowrap;
+    }
+
+    @keyframes fadeIn {
+        from { opacity:0; transform: translateY(8px); }
+        to { opacity:1; transform: translateY(0); }
+    }
 </style>
 </head>
 <body>
@@ -121,7 +195,7 @@
 
                 <td>
                     {% if h.student_rating %}
-                        ⭐ {{ h.student_rating }}/5<br>
+                        ⭐ {{ h.student_rating }}/5
                     {% else %}
                         —
                     {% endif %}
@@ -132,21 +206,20 @@
                 </td>
 
                 <td>
-                 <a class="reply-btn" href="/teacher/reply/{{ h.request_id }}">
-                    {% if h.is_closed == 1 %}
-                        View Chat
-                    {% else %}
-                        Open Chat
-                    {% endif %}
-                 </a>
+                    <a class="reply-btn" href="/teacher/reply/{{ h.request_id }}">
+                        {% if h.is_closed == 1 %}
+                            View Chat
+                        {% else %}
+                            Open Chat
+                        {% endif %}
+                    </a>
                 </td>
-
             </tr>
             {% endfor %}
         </table>
 
         {% else %}
-        <p>No counselling history available.</p>
+            <p>No counselling history available.</p>
         {% endif %}
     </div>
 </div>

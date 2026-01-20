@@ -2,30 +2,32 @@
 <html>
 <head>
     <title>Teacher Dashboard</title>
+
     <!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-482XK0D475"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-482XK0D475');
-</script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-482XK0D475"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-482XK0D475');
+    </script>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #fbe9e7;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #F4F6F8;
             margin: 0;
         }
 
         /* ===== NAVBAR ===== */
         .navbar {
-            background: #c62828;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
             color: white;
-            padding: 12px 25px;
+            padding: 14px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         .navbar .brand {
             font-size: 18px;
@@ -35,68 +37,92 @@
             color: white;
             margin-left: 20px;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
+            transition: opacity 0.3s ease;
         }
         .navbar a:hover {
+            opacity: 0.85;
             text-decoration: underline;
         }
         .navbar .logout {
-            background: white;
-            color: #c62828;
-            padding: 6px 12px;
-            border-radius: 4px;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
         }
 
         /* ===== CONTENT ===== */
         .container {
-            padding: 30px;
+            padding: 35px;
         }
         .card {
             background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            animation: fadeIn 0.4s ease;
         }
+
         h2 {
-            color: #c62828;
+            color: #4E6E63;
             margin-bottom: 10px;
         }
+
         p {
-            color: #444;
+            color: #3F4F4B;
             line-height: 1.6;
         }
 
         .info-box {
-            margin-top: 15px;
-            background: #fff3f2;
-            padding: 15px;
-            border-radius: 6px;
+            margin-top: 18px;
+            background: #EEF4F1;
+            padding: 18px;
+            border-radius: 10px;
+            border-left: 5px solid #7DAA92;
         }
         .info-box p {
-            margin: 6px 0;
-            font-weight: bold;
+            margin: 8px 0;
+            font-weight: 600;
+            color: #3F4F4B;
         }
         .info-box span {
             font-weight: normal;
-            color: #333;
+            color: #2F3E3A;
         }
 
         .quick-links {
-            margin-top: 20px;
+            margin-top: 25px;
         }
         .quick-links a {
             display: inline-block;
             margin-right: 15px;
-            margin-top: 10px;
-            padding: 10px 15px;
-            background: #c62828;
+            margin-top: 12px;
+            padding: 10px 18px;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
             color: white;
-            border-radius: 5px;
+            border-radius: 22px;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 14px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         .quick-links a:hover {
-            background: #b71c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+        }
+
+        .quick-links a:last-child {
+            background: linear-gradient(90deg, #4F7F6C, #6EA58C);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -133,17 +159,14 @@
             respond to students, and track counselling history.
         </p>
 
-        
-            <div class="quick-links">
-    <a href="/teacher/request">View Requests</a>
-    <a href="/teacher/history">View History</a>
+        <div class="quick-links">
+            <a href="/teacher/request">View Requests</a>
+            <a href="/teacher/history">View History</a>
 
-    <!-- 📊 NEW BUTTON: Generate Excel -->
-    <a href="/teacher/export_excel" style="background:#2e7d32;">
-        📊 Generate Excel Report
-    </a>
-</div>
-
+            <!-- 📊 Generate Excel -->
+            <a href="/teacher/export_excel">
+                📊 Generate Excel Report
+            </a>
         </div>
     </div>
 </div>
