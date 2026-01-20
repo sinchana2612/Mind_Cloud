@@ -2,95 +2,13 @@
 <html>
 <head>
     <title>Teacher Counselling Requests</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #F4F6F5; /* soft grey */
-            margin: 0;
-            padding: 30px;
-            color: #3A3A3A;
-        }
-
-        h2 {
-            color: #5F8F82; /* dark sage */
-            margin-bottom: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-        }
-
-        th, td {
-            padding: 14px;
-            text-align: left;
-            border-bottom: 1px solid #DADDDD;
-        }
-
-        th {
-            background: #7FA99B; /* sage green */
-            color: white;
-            font-weight: bold;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover {
-            background: #F0F4F2;
-        }
-
-        button {
-            background: #7FA99B;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        button:hover {
-            background: #5F8F82;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
-
-        .reject {
-            background: #B0B8B5; /* muted grey */
-            margin-left: 6px;
-        }
-
-        .reject:hover {
-            background: #8F9A96;
-        }
-
-        .status {
-            font-weight: bold;
-            color: #5F8F82;
-        }
-
-        .empty {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-        }
-    </style>
 </head>
 <body>
 
 <h2>Counselling Requests from Teachers</h2>
 
 {% if requests %}
-<table>
+<table border="1" cellpadding="8">
 <tr>
     <th>Teacher</th>
     <th>Reason</th>
@@ -106,17 +24,9 @@
     <td>{{ r.reason }}</td>
     <td>{{ r.message or "-" }}</td>
     <td>{{ r.created_at }}</td>
-    <td class="status">{{ r.status }}</td>
+    <td>{{ r.status }}</td>
     <td>
         {% if r.status == 'Pending' %}
-<<<<<<< Updated upstream
-        <form method="POST" action="/student/respond_request/{{ r.id }}/Accepted" style="display:inline;">
-            <button type="submit">Accept</button>
-        </form>
-        <form method="POST" action="/student/respond_request/{{ r.id }}/Rejected" style="display:inline;">
-            <button type="submit" class="reject">Reject</button>
-        </form>
-=======
        <form method="POST" action="/student/request/{{ r.id }}" style="display:inline;">
     <input type="hidden" name="action" value="accept">
     <button type="submit" class="btn btn-success">
@@ -132,7 +42,6 @@
 </form>
 
 
->>>>>>> Stashed changes
         {% else %}
         —
         {% endif %}
@@ -141,9 +50,7 @@
 {% endfor %}
 </table>
 {% else %}
-<div class="empty">
-    <p>No counselling requests at the moment.</p>
-</div>
+<p>No requests.</p>
 {% endif %}
 
 </body>
