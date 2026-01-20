@@ -143,7 +143,8 @@
 
             <!-- PROBLEM -->
             <label>Your Problem</label>
-            <textarea name="problem" rows="4" required></textarea>
+           <textarea name="problem" required>{{ prefilled_message }}</textarea>
+
 
             <!-- CATEGORY -->
             <label>Category</label>
@@ -161,6 +162,12 @@
             </label>
 
             <button type="submit">Submit Request</button>
+            {% if source == "teacher_request" %}
+<div style="background:#e8f4ff; padding:10px; margin-bottom:15px; border-radius:6px;">
+    <strong>Info:</strong> You are continuing a counselling session requested by your teacher.
+</div>
+{% endif %}
+
         </form>
     </div>
 </div>

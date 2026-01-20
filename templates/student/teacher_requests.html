@@ -109,12 +109,30 @@
     <td class="status">{{ r.status }}</td>
     <td>
         {% if r.status == 'Pending' %}
+<<<<<<< Updated upstream
         <form method="POST" action="/student/respond_request/{{ r.id }}/Accepted" style="display:inline;">
             <button type="submit">Accept</button>
         </form>
         <form method="POST" action="/student/respond_request/{{ r.id }}/Rejected" style="display:inline;">
             <button type="submit" class="reject">Reject</button>
         </form>
+=======
+       <form method="POST" action="/student/request/{{ r.id }}" style="display:inline;">
+    <input type="hidden" name="action" value="accept">
+    <button type="submit" class="btn btn-success">
+        Accept
+    </button>
+</form>
+
+<form method="POST" action="/student/request/{{ r.id }}" style="display:inline;">
+    <input type="hidden" name="action" value="reject">
+    <button type="submit" class="btn btn-danger">
+        Reject
+    </button>
+</form>
+
+
+>>>>>>> Stashed changes
         {% else %}
         —
         {% endif %}

@@ -94,28 +94,56 @@ def student_request():
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
+    teacher_id = request.args.get("teacher_id")
+    source = request.args.get("source")
+    linked_request_id = request.args.get("linked_request_id")
+
+    # Default prefilled message
+    prefilled_message = ""
+    if source == "teacher_request":
+        prefilled_message = (
+            "This counselling request is in response to the "
+            "teacher-initiated counselling request."
+        )
+
     if request.method == "POST":
-        cursor.execute("SELECT id FROM students WHERE user_id=%s",
-                       (session["user_id"],))
+        cursor.execute(
+            "SELECT id FROM students WHERE user_id=%s",
+            (session["user_id"],)
+        )
         student = cursor.fetchone()
-        confidential = 1 if request.form.get("confidential") == "1" else 0
-        
-        #create counselling request
+
         cursor.execute("""
-            INSERT INTO counselling_requests (student_id, problem, category, status, is_closed)
-            VALUES (%s, %s, %s, 'Pending', 0)
-        """, (student["id"], request.form["problem"], request.form["category"]))
+            INSERT INTO counselling_requests
+            (student_id, problem, category, status, is_closed, linked_teacher_request_id)
+            VALUES (%s, %s, %s, 'Pending', 0, %s)
+        """, (
+            student["id"],
+            request.form["problem"],
+            request.form["category"],
+            linked_request_id
+        ))
+
         request_id = cursor.lastrowid
 
-        #save confidentiality on first message
         cursor.execute("""
-            INSERT INTO counselling_messages (request_id, sender_role, message, confidential)
+            INSERT INTO counselling_messages
+            (request_id, sender_role, message, confidential)
             VALUES (%s, 'student', %s, %s)
-        """, (request_id, request.form["problem"], confidential))
+        """, (
+            request_id,
+            request.form["problem"],
+            0
+        ))
 
         return redirect("/student/history")
 
-    return render_template("student/request.html")
+    return render_template(
+        "student/request.html",
+        prefilled_message=prefilled_message,
+        source=source
+    )
+
 @app.route("/student/teacher_requests")
 @login_required("student")
 def student_teacher_requests():
@@ -149,22 +177,55 @@ def student_teacher_requests():
         requests=requests,
         name=session["name"]
     )
-@app.route("/student/respond_request/<int:request_id>/<string:action>", methods=["POST"])
+@app.route("/student/request/<int:request_id>", methods=["POST"])
 @login_required("student")
-def student_respond_request(request_id, action):
-    if action not in ["Accepted", "Rejected"]:
-        return "Invalid action", 400
-
+def student_respond_request(request_id):
     db = get_db()
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary=True)
 
+    action = request.form.get("action")  # accept / reject
+
+    # 1️⃣ Fetch the teacher request
     cursor.execute("""
-        UPDATE teacher_counselling_requests
-        SET status=%s, responded_at=NOW()
-        WHERE id=%s
-    """, (action, request_id))
+        SELECT *
+        FROM teacher_counselling_requests
+        WHERE id=%s AND student_id=(
+            SELECT id FROM students WHERE user_id=%s
+        )
+    """, (request_id, session["user_id"]))
+    req = cursor.fetchone()
+
+    if not req:
+        return "Invalid request", 404
+
+    # 2️⃣ Update status
+    if action == "accept":
+        cursor.execute("""
+            UPDATE teacher_counselling_requests
+            SET status='Accepted', responded_at=NOW()
+            WHERE id=%s
+        """, (request_id,))
+
+        # 3️⃣ Redirect to student counselling request page (prefilled)
+        return redirect(
+    f"/student/request"
+    f"?teacher_id={req['teacher_id']}"
+    f"&source=teacher_request"
+    f"&linked_request_id={request_id}"
+)
+
+        
+
+    elif action == "reject":
+        cursor.execute("""
+            UPDATE teacher_counselling_requests
+            SET status='Rejected', responded_at=NOW()
+            WHERE id=%s
+        """, (request_id,))
+        return redirect("/student/teacher_requests")
 
     return redirect("/student/teacher_requests")
+
 
 
 @app.route("/student/history")
@@ -301,6 +362,60 @@ def student_feedback(request_id):
         return redirect("/student/history")
 
     return render_template("student/feedback.html", request_id=request_id)
+@app.route("/student/send_counselling_request", methods=["GET", "POST"])
+@login_required("student")
+def student_send_counselling_request():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    teacher_id = request.args.get("teacher_id")
+    source = request.args.get("source")
+    linked_request_id = request.args.get("linked_request_id")
+
+    # Fetch teachers for dropdown
+    cursor.execute("""
+        SELECT t.id, u.UserName
+        FROM teachers t
+        JOIN users u ON t.user_id = u.id
+    """)
+    teachers = cursor.fetchall()
+
+    selected_teacher = None
+    if teacher_id:
+        cursor.execute("""
+            SELECT t.id, u.UserName
+            FROM teachers t
+            JOIN users u ON t.user_id = u.id
+            WHERE t.id=%s
+        """, (teacher_id,))
+        selected_teacher = cursor.fetchone()
+
+    if request.method == "POST":
+        # Get student id
+        cursor.execute("SELECT id FROM students WHERE user_id=%s",
+                       (session["user_id"],))
+        student = cursor.fetchone()
+
+        cursor.execute("""
+            INSERT INTO counselling_requests
+            (student_id, problem, category, status, is_closed, linked_teacher_request_id)
+            VALUES (%s, %s, %s, 'Pending', 0, %s)
+        """, (
+            student["id"],
+            request.form["message"],
+            request.form["category"],
+            linked_request_id
+        ))
+
+        return redirect("/student/history")
+
+    return render_template(
+        "student/send_counselling_request.html",
+        teachers=teachers,
+        selected_teacher=selected_teacher,
+        source=source,
+        linked_request_id=linked_request_id
+    )
 
 # ======================================================
 # ===================== TEACHER ========================
