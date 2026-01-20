@@ -1,3 +1,5 @@
 Flask
+Werkzeug
 mysql-connector-python
-werkzeug
+openpyxl
+pandas
