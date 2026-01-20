@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>Admin Dashboard</title>
-    <head>
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-482XK0D475"></script>
@@ -13,70 +12,154 @@
       gtag('config', 'G-482XK0D475');
     </script>
 
-    <style>
-        /* your existing CSS */
-    </style>
-</head>
-
-
     <!-- GOOGLE CHARTS -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
     <style>
+        /* ================= BASE ================= */
         body {
-            font-family: Arial, sans-serif;
-            background: #fbe9e7;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #F4F6F8, #E6F2EC);
             margin: 0;
+            color: #2E2E2E;
         }
 
-        /* ===== NAVBAR ===== */
+        /* ================= NAVBAR ================= */
         .navbar {
-            background: #c62828;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
             color: white;
-            padding: 12px 25px;
+            padding: 14px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
         }
+
         .navbar .brand {
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 600;
+            letter-spacing: 0.6px;
         }
+
         .navbar .right a {
             color: white;
-            margin-left: 20px;
+            margin-left: 22px;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 500;
+            font-size: 14px;
+            position: relative;
         }
-        .navbar .right a:hover {
-            text-decoration: underline;
-        }
-     .navbar .logout {
-            
-            color: rgb(228, 223, 223);
-            padding: 6px 12px;
-            border-radius: 4px;
-     }
 
-        /* ===== CONTENT ===== */
-        .container {
-            padding: 30px;
+        .navbar .right a::after {
+            content: "";
+            position: absolute;
+            width: 0%;
+            height: 2px;
+            left: 0;
+            bottom: -4px;
+            background: white;
+            transition: width 0.3s ease;
         }
+
+        .navbar .right a:hover::after {
+            width: 100%;
+        }
+
+        .navbar .logout {
+            background: white;
+            color: #5F8D7E;
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .navbar .logout:hover {
+            background: #EEF6F2;
+            transform: scale(1.05);
+        }
+
+        /* ================= CONTENT ================= */
+        .container {
+            padding: 35px;
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        /* ================= CARD ================= */
         .card {
             background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            padding: 28px;
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
             margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+        }
+
         h3 {
-            color: #c62828;
+            color: #5F8D7E;
             margin-bottom: 15px;
+            font-weight: 600;
         }
+
+        p {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* ================= CHARTS ================= */
         .charts {
             display: flex;
             gap: 30px;
             flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* ================= TABLE ================= */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        table th {
+            background: #7DAA92;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+
+        table td {
+            padding: 10px;
+            border-bottom: 1px solid #E0E0E0;
+        }
+
+        table tr:hover {
+            background: #F4F9F7;
+        }
+
+        hr {
+            border: none;
+            height: 1px;
+            background: #D6E3DD;
+        }
+
+        /* ================= ANIMATION ================= */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 
@@ -104,7 +187,7 @@
 
             let options = {
                 title: 'Counselling Status',
-                colors: ['#2e7d32', '#c62828', '#ff9800'], // Pending, Responded, Completed
+                colors: ['#7DAA92', '#E57373', '#FFB74D'],
                 backgroundColor: 'transparent'
             };
 
@@ -113,7 +196,6 @@
             );
             chart.draw(data, options);
         }
-
 
         function drawCategoryChart(categoryData) {
             let data = new google.visualization.DataTable();
@@ -126,7 +208,7 @@
 
             let options = {
                 title: 'Category-wise Counselling Requests',
-                colors: ['#c62828'],
+                colors: ['#5F8D7E'],
                 backgroundColor: 'transparent'
             };
 
@@ -175,10 +257,10 @@
 
         {% if feedbacks %}
         <hr style="margin:25px 0;">
-        <h3 style="color:#c62828;">Student Feedback</h3>
+        <h3>Student Feedback</h3>
 
-        <table border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse:collapse;">
-            <tr style="background:#ef5350; color:white;">
+        <table>
+            <tr>
                <th>Teacher</th>
                <th>Rating</th>
                <th>Feedback Message</th>
@@ -186,7 +268,7 @@
 
             {% for fb in feedbacks %}
             <tr>
-                <td>{{ fb.teacher_name }}</td> <!-- ALWAYS teacher -->
+                <td>{{ fb.teacher_name }}</td>
                 <td>
                     {% if fb.student_rating %}
                       ⭐ {{ fb.student_rating }}/5
@@ -198,7 +280,6 @@
             </tr>
             {% endfor %}
         </table>
-
         {% endif %}
     </div>
 
@@ -206,5 +287,3 @@
 
 </body>
 </html>
-
-
