@@ -2,84 +2,132 @@
 <html>
 <head>
     <title>Student Dashboard</title>
+
     <!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-482XK0D475"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-482XK0D475');
-</script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-482XK0D475"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-482XK0D475');
+    </script>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #fbe9e7;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #F4F6F8;
             margin: 0;
         }
 
         /* ===== NAVBAR ===== */
         .navbar {
-            background: #c62828;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
             color: white;
-            padding: 12px 25px;
+            padding: 14px 28px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
         }
+
         .navbar .brand {
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 600;
+            letter-spacing: 0.4px;
         }
+
         .navbar a {
             color: white;
-            margin-left: 20px;
+            margin-left: 22px;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
         }
+
         .navbar a:hover {
-            text-decoration: underline;
+            opacity: 0.85;
         }
+
         .navbar .logout {
-            background: white;
-            color: #c62828;
-            padding: 6px 12px;
-            border-radius: 4px;
+            background: #ffffff;
+            color: #5F8D7E;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
         }
 
         /* ===== CONTENT ===== */
         .container {
-            padding: 30px;
+            padding: 35px;
+            display: flex;
+            justify-content: center;
         }
+
         .card {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            width: 100%;
+            max-width: 600px;
+            animation: fadeIn 0.5s ease;
         }
+
         h2 {
-            color: #c62828;
-            margin-bottom: 10px;
+            color: #5F8D7E;
+            margin-bottom: 12px;
+            font-weight: 600;
         }
+
         p {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .info {
+            margin: 14px 0;
+            background: #F0F4F3;
+            padding: 14px;
+            border-radius: 10px;
+            border-left: 4px solid #7DAA92;
+        }
+
+        .info p {
+            margin: 6px 0;
             color: #444;
         }
 
         .actions {
-            margin-top: 20px;
+            margin-top: 26px;
         }
+
         .actions a {
             display: inline-block;
             margin-right: 15px;
-            padding: 10px 16px;
-            background: #c62828;
+            padding: 12px 22px;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
             color: white;
-            border-radius: 5px;
+            border-radius: 25px;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+
         .actions a:hover {
-            background: #b71c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -101,13 +149,16 @@
     <div class="card">
         <h2>Welcome {{ student.UserName }} 🎓</h2>
 
-                    <p><b>Department:</b> {{ student.department }}</p>
-                    <p><b>Class:</b> {{ student.class }}</p>
-                    <p><b>Email:</b> {{ student.email }}</p>
+        <div class="info">
+            <p><b>Department:</b> {{ student.department }}</p>
+            <p><b>Class:</b> {{ student.class }}</p>
+            <p><b>Email:</b> {{ student.email }}</p>
+        </div>
 
         <p>
-            You can request counselling sessions, view teacher responses,
-            and continue conversations using the options below.
+            This space is designed to support you. You can request counselling sessions,
+            track your conversations, and continue discussions with your teacher in a
+            safe and confidential environment.
         </p>
 
         <div class="actions">

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html>
 <head>
     <title>My Counselling History</title>
@@ -12,50 +12,141 @@
     </script>
 
     <style>
-        body { font-family: Arial, sans-serif; background: #fbe9e7; margin: 0; }
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #F4F6F8;
+            margin: 0;
+        }
 
+        /* ===== NAVBAR ===== */
         .navbar {
-            background: #c62828; color: white;
-            padding: 12px 25px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .navbar a { color: white; margin-left: 20px; text-decoration: none; font-weight: bold; }
-        .navbar .logout {
-            background: white; color: #c62828;
-            padding: 6px 12px; border-radius: 4px;
-        }
-
-        .container { padding: 30px; }
-        .card {
-            background: white; padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
+            color: white;
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        h2 { color: #c62828; margin-bottom: 20px; }
-
-        table { width: 100%; border-collapse: collapse; }
-        th, td {
-            padding: 12px; border-bottom: 1px solid #ddd;
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: 600;
         }
-        th { background: #ef5350; color: white; }
 
-        .completed { color: green; font-weight: bold; }
-        .pending { color: #c62828; font-weight: bold; }
-        .closed { color: #777; font-weight: bold; }
-
-        .chat-btn {
-            background: #c62828; color: white;
-            padding: 6px 14px;
-            border-radius: 4px;
+        .navbar a {
+            color: white;
+            margin-left: 22px;
             text-decoration: none;
-            font-weight: bold; font-size: 14px;
+            font-weight: 600;
+            transition: opacity 0.3s ease;
         }
-        .chat-btn:hover { background: #b71c1c; }
+
+        .navbar a:hover {
+            opacity: 0.85;
+        }
+
+        .navbar .logout {
+            background: rgba(255,255,255,0.95);
+            color: #5F8D7E;
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+
+        /* ===== CONTENT ===== */
+        .container {
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            animation: fadeIn 0.4s ease;
+        }
+
+        h2 {
+            color: #5F8D7E;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        /* ===== TABLE ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: #E6EFEA;
+            color: #4E6E63;
+            font-weight: 700;
+        }
+
+        tr:hover {
+            background: #F9FBFA;
+        }
+
+        /* ===== STATUS COLORS ===== */
+        .completed {
+            color: #2E7D32;
+            font-weight: bold;
+        }
+
+        .pending {
+            color: #C62828;
+            font-weight: bold;
+        }
+
+        .closed {
+            color: #777;
+            font-weight: bold;
+        }
+
+        /* ===== CHAT BUTTON ===== */
+        .chat-btn {
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 18px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: inline-block;
+        }
+
+        .chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+        }
 
         .disabled-btn {
-            background: #777 !important;
-            cursor: allowed;
+            background: #9E9E9E !important;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -91,7 +182,6 @@
                 <td>{{ h.problem }}</td>
                 <td>{{ h.category }}</td>
 
-                <!-- Status Display -->
                 <td class="{% if h.is_closed == 1 %}closed{% elif h.status == 'Completed' %}completed{% else %}pending{% endif %}">
                     {% if h.is_closed == 1 %}
                         ENDED
@@ -100,7 +190,6 @@
                     {% endif %}
                 </td>
 
-                <!-- Confidential Checkbox -->
                 <td>
                    {% if h.confidential == 1 %}
                      🔒 Confidential
@@ -109,8 +198,6 @@
                    {% endif %}
                 </td>
 
-
-                <!-- Chat Button -->
                 <td style="white-space:nowrap;">
                     {% if h.is_closed == 1 %}
                         <a class="chat-btn disabled-btn" href="/student/reply/{{ h.id }}">View Chat</a>

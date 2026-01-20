@@ -1,68 +1,124 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html>
 <head>
     <title>Conversation</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #fbe9e7;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #F4F6F8;
             margin: 0;
         }
+
         .header {
-            background: #c62828;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
             color: white;
-            padding: 15px;
+            padding: 18px;
             text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
+
         .container {
-            padding: 20px;
+            padding: 25px;
+            max-width: 900px;
+            margin: auto;
         }
+
         .message {
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 6px;
+            margin-bottom: 16px;
+            padding: 14px 16px;
+            border-radius: 14px;
             max-width: 70%;
+            line-height: 1.5;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            animation: fadeIn 0.3s ease;
         }
+
         .student {
-            background: #ffcdd2;
+            background: #E1F0EA;
             margin-left: auto;
+            border-top-right-radius: 4px;
         }
+
         .teacher {
-            background: #ffebee;
+            background: #FFFFFF;
             margin-right: auto;
+            border-top-left-radius: 4px;
+            border-left: 5px solid #7DAA92;
         }
+
         textarea {
             width: 100%;
-            height: 100px;
-            margin-top: 15px;
-            padding: 10px;
+            height: 110px;
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #C9D6CF;
+            font-size: 14px;
+            resize: none;
+            transition: border 0.3s ease, box-shadow 0.3s ease;
         }
+
+        textarea:focus {
+            outline: none;
+            border-color: #7DAA92;
+            box-shadow: 0 0 0 3px rgba(125,170,146,0.25);
+        }
+
         button {
-            margin-top: 10px;
-            padding: 10px 15px;
-            background: #c62828;
+            margin-top: 12px;
+            padding: 12px 18px;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 20px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .end-btn { background: #d84315; }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .end-btn {
+            background: linear-gradient(90deg, #B56576, #D17A88);
+        }
+
         .closed-msg {
-            background: #ffd180;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 20px;
+            background: #E8ECEA;
+            padding: 14px;
+            border-radius: 12px;
+            margin-top: 22px;
             font-weight: bold;
-            color: #6d4c41;
+            color: #4E6E63;
             text-align: center;
+            box-shadow: inset 0 0 0 1px #C9D6CF;
         }
+
         a {
             display: inline-block;
-            margin-top: 20px;
-            color: #c62828;
+            margin-top: 22px;
+            color: #5F8D7E;
             font-weight: bold;
             text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #3F6F60;
+            text-decoration: underline;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -97,7 +153,7 @@
     {% else %}
         <!-- Chat is CLOSED -->
         <div class="closed-msg">
-            🔒CHAT ENDED
+            🔒 CHAT ENDED
         </div>
     {% endif %}
 

@@ -4,52 +4,123 @@
     <title>Request Counselling</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #fbe9e7;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #F4F6F8;
             margin: 0;
         }
+
+        /* ===== NAVBAR ===== */
         .navbar {
-            background: #c62828;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
             color: white;
-            padding: 12px 25px;
+            padding: 14px 25px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
+
+        .navbar span {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
         .navbar a {
             color: white;
             margin-left: 20px;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
+            transition: opacity 0.3s ease;
         }
+
+        .navbar a:hover {
+            opacity: 0.85;
+            text-decoration: underline;
+        }
+
+        /* ===== CONTENT ===== */
         .container {
-            padding: 40px;
+            padding: 50px;
             display: flex;
             justify-content: center;
         }
+
         .card {
-            background: white;
-            padding: 25px;
-            width: 450px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: #FFFFFF;
+            padding: 30px;
+            width: 460px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            animation: fadeIn 0.4s ease;
         }
+
+        h2 {
+            text-align: center;
+            color: #4E6E63;
+            margin-bottom: 20px;
+        }
+
         label {
-            font-weight: bold;
+            font-weight: 600;
             display: block;
-            margin-top: 15px;
+            margin-top: 18px;
+            color: #3F4F4B;
         }
-        textarea, select, button {
+
+        textarea, select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-top: 8px;
+            border-radius: 10px;
+            border: 1px solid #C9D6CF;
+            font-size: 14px;
+            transition: border 0.3s ease, box-shadow 0.3s ease;
         }
+
+        textarea {
+            resize: none;
+        }
+
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #7DAA92;
+            box-shadow: 0 0 0 3px rgba(125,170,146,0.25);
+        }
+
+        label input[type="checkbox"] {
+            margin-right: 6px;
+            transform: scale(1.1);
+        }
+
         button {
-            background: #c62828;
+            width: 100%;
+            margin-top: 25px;
+            padding: 12px;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
             color: white;
             border: none;
-            margin-top: 20px;
-            font-weight: bold;
+            border-radius: 22px;
+            font-weight: 600;
+            font-size: 15px;
             cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -83,7 +154,8 @@
                 <option value="Personal">Personal</option>
                 <option value="Health">Health</option>
             </select>
-            <label style="font-size:14px;">
+
+            <label style="font-size:14px; margin-top:14px;">
                 <input type="checkbox" name="confidential" value="1">
                 Hide my identity for this counselling
             </label>

@@ -1,24 +1,105 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html>
 <head>
     <title>Student Profile</title>
+
+    <style>
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #F4F6F8;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .profile-card {
+            background: white;
+            padding: 35px;
+            width: 380px;
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            animation: fadeIn 0.4s ease;
+        }
+
+        h2 {
+            text-align: center;
+            color: #5F8D7E;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        label {
+            font-weight: 600;
+            color: #4E6E63;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px;
+            margin-top: 8px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            border: 1px solid #C9D6CF;
+            font-size: 14px;
+            transition: border 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #7DAA92;
+            box-shadow: 0 0 0 3px rgba(125,170,146,0.25);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #5F8D7E, #7DAA92);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 <body>
 
-<h2>Complete Your Profile</h2>
+<div class="profile-card">
+    <h2>Complete Your Profile</h2>
 
-<form method="POST">
-    <label>Department</label><br>
-    <input type="text" name="department" required><br><br>
+    <form method="POST">
+        <label>Department</label><br>
+        <input type="text" name="department" required><br>
 
-    <label>Class</label><br>
-    <input type="text" name="class" required><br><br>
+        <label>Class</label><br>
+        <input type="text" name="class" required><br>
 
-    <label>Email</label><br>
-    <input type="email" name="email" required><br><br>
+        <label>Email</label><br>
+        <input type="email" name="email" required><br>
 
-    <button type="submit">Save Profile</button>
-</form>
+        <button type="submit">Save Profile</button>
+    </form>
+</div>
 
 </body>
 </html>
