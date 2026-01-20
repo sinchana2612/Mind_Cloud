@@ -2,40 +2,202 @@
 <html>
 <head>
     <title>Send Counselling Request</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #F4F6F5; /* soft grey */
+            margin: 0;
+            color: #3A3A3A;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: #7FA99B; /* sage green */
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 0.4px;
+        }
+
+        .navbar a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            position: relative;
+            transition: color 0.25s ease, transform 0.2s ease;
+        }
+
+        .navbar a:hover {
+            color: #EAF4F1;
+            transform: translateY(-1px);
+        }
+
+        .navbar a::after {
+            content: "";
+            position: absolute;
+            width: 0%;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background: #EAF4F1;
+            transition: width 0.25s ease;
+        }
+
+        .navbar a:hover::after {
+            width: 100%;
+        }
+
+        .navbar .logout {
+            background: white;
+            color: #5F8F82;
+            padding: 6px 14px;
+            border-radius: 18px;
+            transition: all 0.25s ease;
+        }
+
+        .navbar .logout:hover {
+            background: #EAF4F1;
+            color: #4F7E72;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+        }
+
+        /* ===== CONTENT ===== */
+        .container {
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .card {
+            background: white;
+            width: 420px;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            color: #5F8F82;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border-radius: 6px;
+            border: 1px solid #C9D6D2;
+            background: #F9FBFA;
+            transition: border 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: #7FA99B;
+            box-shadow: 0 0 0 2px rgba(127,169,155,0.2);
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .success {
+            background: #EAF4F1;
+            color: #4F7E72;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        button {
+            margin-top: 22px;
+            width: 100%;
+            padding: 10px;
+            background: #7FA99B;
+            color: white;
+            border: none;
+            border-radius: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        button:hover {
+            background: #5F8F82;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+        }
+    </style>
 </head>
 <body>
 
-<h2>Send Counselling Request</h2>
+<!-- ===== NAVBAR ===== -->
+<div class="navbar">
+    <span class="brand">Teacher Panel</span>
+    <div>
+        <a href="/teacher/dashboard">Dashboard</a>
+        <a href="/teacher/request">Requests</a>
+        <a href="/teacher/history">History</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</div>
 
-{% if success %}
-<p style="color:green;">{{ success }}</p>
-{% endif %}
+<div class="container">
+    <div class="card">
+        <h2>Send Counselling Request</h2>
 
-<form method="POST">
+        {% if success %}
+        <div class="success">{{ success }}</div>
+        {% endif %}
 
-    <label>Select Student</label><br>
-    <select name="student_id" required>
-        <option value="">-- Select Student --</option>
-        {% for s in students %}
-        <option value="{{ s.id }}">{{ s.UserName }}</option>
-        {% endfor %}
-    </select><br><br>
+        <form method="POST">
 
-    <label>Reason</label><br>
-    <select name="reason" required>
-        <option>Academic</option>
-        <option>Personal</option>
-        <option>Behavioral</option>
-        <option>Career</option>
-        <option>Mental Well-Being</option>
-    </select><br><br>
+            <label>Select Student</label>
+            <select name="student_id" required>
+                <option value="">-- Select Student --</option>
+                {% for s in students %}
+                <option value="{{ s.id }}">{{ s.UserName }}</option>
+                {% endfor %}
+            </select>
 
-    <label>Message (Optional)</label><br>
-    <textarea name="message" rows="4"></textarea><br><br>
+            <label>Reason</label>
+            <select name="reason" required>
+                <option>Academic</option>
+                <option>Personal</option>
+                <option>Behavioral</option>
+                <option>Career</option>
+                <option>Mental Well-Being</option>
+            </select>
 
-    <button type="submit">Send Request</button>
+            <label>Message (Optional)</label>
+            <textarea name="message" rows="4"></textarea>
 
-</form>
+            <button type="submit">Send Request</button>
+
+        </form>
+    </div>
+</div>
 
 </body>
 </html>
+

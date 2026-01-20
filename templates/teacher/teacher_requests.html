@@ -2,36 +2,173 @@
 <html>
 <head>
     <title>Student Responses</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #F4F6F5; /* soft grey */
+            margin: 0;
+            color: #3A3A3A;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: #7FA99B; /* sage green */
+            color: white;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .navbar .brand {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 0.4px;
+        }
+
+        .navbar a {
+            color: white;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            position: relative;
+            transition: color 0.25s ease, transform 0.2s ease;
+        }
+
+        .navbar a:hover {
+            color: #EAF4F1;
+            transform: translateY(-1px);
+        }
+
+        .navbar a::after {
+            content: "";
+            position: absolute;
+            width: 0%;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background: #EAF4F1;
+            transition: width 0.25s ease;
+        }
+
+        .navbar a:hover::after {
+            width: 100%;
+        }
+
+        .navbar .logout {
+            background: white;
+            color: #5F8F82;
+            padding: 6px 14px;
+            border-radius: 18px;
+            transition: all 0.25s ease;
+        }
+
+        .navbar .logout:hover {
+            background: #EAF4F1;
+            color: #4F7E72;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+        }
+
+        /* ===== CONTENT ===== */
+        .container {
+            padding: 35px;
+        }
+
+        h2 {
+            color: #5F8F82;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+        }
+
+        th, td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #DADDDD;
+        }
+
+        th {
+            background: #7FA99B;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: #F0F4F2;
+        }
+
+        .status {
+            font-weight: bold;
+            color: #5F8F82;
+        }
+
+        .empty {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
 
-<h2>Student Responses to Your Requests</h2>
+<!-- ===== NAVBAR ===== -->
+<div class="navbar">
+    <span class="brand">Teacher Panel</span>
+    <div>
+        <a href="/teacher/dashboard">Dashboard</a>
+        <a href="/teacher/send_request">Send Request</a>
+        <a href="/teacher/teacher_requests">Responses</a>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</div>
 
-{% if requests %}
-<table border="1" cellpadding="8">
-<tr>
-    <th>Student</th>
-    <th>Reason</th>
-    <th>Message</th>
-    <th>Status</th>
-    <th>Sent On</th>
-    <th>Responded On</th>
-</tr>
+<div class="container">
+    <h2>Student Responses to Your Requests</h2>
 
-{% for r in requests %}
-<tr>
-    <td>{{ r.student_name }}</td>
-    <td>{{ r.reason }}</td>
-    <td>{{ r.message or "-" }}</td>
-    <td>{{ r.status }}</td>
-    <td>{{ r.created_at }}</td>
-    <td>{{ r.responded_at or "-" }}</td>
-</tr>
-{% endfor %}
-</table>
-{% else %}
-<p>No requests sent.</p>
-{% endif %}
+    {% if requests %}
+    <table>
+        <tr>
+            <th>Student</th>
+            <th>Reason</th>
+            <th>Message</th>
+            <th>Status</th>
+            <th>Sent On</th>
+            <th>Responded On</th>
+        </tr>
+
+        {% for r in requests %}
+        <tr>
+            <td>{{ r.student_name }}</td>
+            <td>{{ r.reason }}</td>
+            <td>{{ r.message or "-" }}</td>
+            <td class="status">{{ r.status }}</td>
+            <td>{{ r.created_at }}</td>
+            <td>{{ r.responded_at or "-" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <div class="empty">
+            <p>No requests sent yet.</p>
+        </div>
+    {% endif %}
+</div>
 
 </body>
 </html>
