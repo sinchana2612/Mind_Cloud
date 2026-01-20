@@ -172,29 +172,60 @@
 
         <form method="POST">
 
-            <label>Select Student</label>
-            <select name="student_id" required>
-                <option value="">-- Select Student --</option>
-                {% for s in students %}
-                <option value="{{ s.id }}">{{ s.UserName }}</option>
-                {% endfor %}
-            </select>
+    <label>Select Student</label>
+    <select name="student_id"
+            {% if request.args.student_id %}readonly disabled{% endif %}
+            required>
+        <option value="">-- Select Student --</option>
+        {% for s in students %}
+        <option value="{{ s.id }}"
+            {% if request.args.student_id and s.id == request.args.student_id|int %}
+                selected
+            {% endif %}>
+            {{ s.UserName }}
+        </option>
+        {% endfor %}
+    </select>
 
-            <label>Reason</label>
-            <select name="reason" required>
-                <option>Academic</option>
-                <option>Personal</option>
-                <option>Behavioral</option>
-                <option>Career</option>
-                <option>Mental Well-Being</option>
-            </select>
+    {# IMPORTANT: ensure student_id is still submitted if disabled #}
+    {% if request.args.student_id %}
+        <input type="hidden" name="student_id" value="{{ request.args.student_id }}">
+    {% endif %}
 
-            <label>Message (Optional)</label>
-            <textarea name="message" rows="4"></textarea>
+    <label>Reason</label>
+    <select name="reason" required>
+        {% set preset_reason = request.args.reason %}
+        <option value="Academic"
+            {% if preset_reason == 'Academic' or preset_reason == 'Academic Performance' %}selected{% endif %}>
+            Academic
+        </option>
+        <option value="Personal"
+            {% if preset_reason == 'Personal' %}selected{% endif %}>
+            Personal
+        </option>
+        <option value="Behavioral"
+            {% if preset_reason == 'Behavioral' %}selected{% endif %}>
+            Behavioral
+        </option>
+        <option value="Career"
+            {% if preset_reason == 'Career' %}selected{% endif %}>
+            Career
+        </option>
+        <option value="Mental Well-Being"
+            {% if preset_reason == 'Mental Well-Being' %}selected{% endif %}>
+            Mental Well-Being
+        </option>
+    </select>
 
-            <button type="submit">Send Request</button>
+    <label>Message (Optional)</label>
+    <textarea name="message" rows="4">{% if request.args.student_id %}
+Based on your recent marks and attendance records, a counselling session is recommended.
+{% endif %}</textarea>
 
-        </form>
+    <button type="submit">Send Request</button>
+
+</form>
+
     </div>
 </div>
 

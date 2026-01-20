@@ -174,5 +174,33 @@
     </div>
 </div>
 
+
+<h3>📤 Upload Marks & Attendance</h3>
+
+{% if error %}
+<p style="color:red;">{{ error }}</p>
+{% endif %}
+
+<form action="/teacher/upload_performance"
+      method="POST"
+      enctype="multipart/form-data">
+
+    <input type="file" name="excel_file" accept=".xlsx,.xls" required>
+    <button type="submit">Upload Excel</button>
+
+</form>
+
+
+    <br><br>
+
+
+
+<a href="/teacher/performance">📊 View Performance</a>
+
+{% if error %}
+<p style="color:red">{{ error }}</p>
+{% endif %}
+
+
 </body>
 </html>

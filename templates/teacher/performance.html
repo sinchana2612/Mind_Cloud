@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Performance</title>
+    <style>
+        .bad { color: red; font-weight: bold; }
+        .avg { color: orange; }
+        .good { color: green; }
+    </style>
+</head>
+<body>
+
+<h2>📊 Student Performance</h2>
+
+<table border="1" cellpadding="8">
+<tr>
+    <th>Student</th>
+    <th>Subject</th>
+    <th>Marks</th>
+    <th>Attendance</th>
+    <th>Status</th>
+    <th>Action</th>
+</tr>
+
+{% for p in performances %}
+<tr>
+    <td>{{ p.student_name }}</td>
+    <td>{{ p.subject }}</td>
+    <td>{{ p.marks }}</td>
+    <td>{{ p.attendance_percentage }}%</td>
+
+    <td class="{% if p.category == 'Needs Counselling' %}bad{% elif p.category == 'Average' %}avg{% else %}good{% endif %}">
+        {{ p.category }}
+    </td>
+
+    <td>
+        {% if p.category == 'Needs Counselling' %}
+            <a href="/teacher/performance/request/{{ p.student_id }}">
+                Send Counselling Request
+            </a>
+        {% else %}
+            -
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
+</table>
+
+</body>
+</html>

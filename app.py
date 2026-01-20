@@ -6,6 +6,9 @@ import subprocess
 from functools import wraps
 import openpyxl
 from io import BytesIO
+import pandas as pd
+import os
+
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key_123"
@@ -410,12 +413,12 @@ def student_send_counselling_request():
         return redirect("/student/history")
 
     return render_template(
-        "student/send_counselling_request.html",
-        teachers=teachers,
-        selected_teacher=selected_teacher,
-        source=source,
-        linked_request_id=linked_request_id
-    )
+    "student/send_requests.html",
+    teachers=teachers,
+    selected_teacher=selected_teacher,
+    source=source,
+    linked_request_id=linked_request_id
+)
 
 # ======================================================
 # ===================== TEACHER ========================
@@ -770,6 +773,123 @@ Summary:
         download_name="counselling_report.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+@app.route("/teacher/upload_performance", methods=["POST"])
+@login_required("teacher")
+def upload_performance():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    file = request.files.get("excel_file")
+
+    if not file:
+        return render_template(
+            "teacher/dashboard.html",
+            error="No file uploaded"
+        )
+
+    if not file.filename.lower().endswith((".xlsx", ".xls")):
+        return render_template(
+            "teacher/dashboard.html",
+            error="Invalid file type. Upload .xlsx or .xls only"
+        )
+
+    try:
+        # ✅ READ EXCEL SAFELY
+        df = pd.read_excel(file, dtype=str)
+
+        # ✅ FORCE COLUMN NAMES TO STRING + CLEAN
+        df.columns = [str(c).strip() for c in df.columns]
+
+        required_cols = [
+            "student_id",
+            "student_name",
+            "subject",
+            "marks",
+            "attendance_percentage"
+        ]
+
+        # ✅ DEBUG CHECK
+        if not all(col in df.columns for col in required_cols):
+            return render_template(
+                "teacher/dashboard.html",
+                error=f"Excel columns mismatch. Found: {list(df.columns)}"
+            )
+
+        for _, row in df.iterrows():
+            if pd.isna(row["student_id"]):
+                continue
+
+            student_id = int(row["student_id"])
+            subject = str(row["subject"]).strip()
+
+            marks = int(float(row["marks"]))
+            attendance = int(float(row["attendance_percentage"]))
+
+            if not (0 <= marks <= 100 and 0 <= attendance <= 100):
+                continue
+
+            cursor.execute("""
+                INSERT INTO student_performance
+                (student_id, subject, marks, attendance_percentage)
+                VALUES (%s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    marks=VALUES(marks),
+                    attendance_percentage=VALUES(attendance_percentage)
+            """, (student_id, subject, marks, attendance))
+
+        return redirect("/teacher/performance")
+
+    except Exception as e:
+        return render_template(
+            "teacher/dashboard.html",
+            error=f"Upload failed: {str(e)}"
+        )
+
+
+@app.route("/teacher/performance")
+@login_required("teacher")
+def teacher_performance():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+            sp.student_id,
+            u.UserName AS student_name,
+            sp.subject,
+            sp.marks,
+            sp.attendance_percentage
+        FROM student_performance sp
+        JOIN students s ON sp.student_id = s.id
+        JOIN users u ON s.user_id = u.id
+        ORDER BY sp.marks ASC, sp.attendance_percentage ASC
+    """)
+
+    rows = cursor.fetchall()
+
+    for r in rows:
+        if r["marks"] < 40 or r["attendance_percentage"] < 75:
+            r["category"] = "Needs Counselling"
+        elif r["marks"] <= 70:
+            r["category"] = "Average"
+        else:
+            r["category"] = "Good"
+
+    return render_template(
+        "teacher/performance.html",
+        performances=rows,
+        name=session["name"]
+    )
+@app.route("/teacher/performance/request/<int:student_id>")
+@login_required("teacher")
+def performance_counselling_request(student_id):
+    return redirect(
+        f"/teacher/send_request"
+        f"?student_id={student_id}"
+        f"&reason=Academic Performance / Attendance Concern"
+    )
+
+
 
 # ======================================================
 # ===================== ADMIN ==========================
